@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: adafdr
+Version: 0.1.0
+Summary: A fast and covariate-adaptive method for multiple hypothesis testing
+Home-page: https://github.com/martinjzhang/adafdr
+Author: Martin Zhang, Fei Xia, James Zou
+Author-email: jinye@stanford.edu
+License: Stanford University
+Description: UNKNOWN
+Platform: UNKNOWN
