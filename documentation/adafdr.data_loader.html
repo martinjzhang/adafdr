@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module adafdr.data_loader</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="adafdr.html"><font color="#ffffff">adafdr</font></a>.data_loader</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/martin/NeuralFDR2/adafdr/adafdr/data_loader.py">/home/martin/NeuralFDR2/adafdr/adafdr/data_loader.py</a></font></td></tr></table>
+    <p><tt>This&nbsp;module&nbsp;contains&nbsp;all&nbsp;functions&nbsp;that&nbsp;are&nbsp;used&nbsp;the&nbsp;load&nbsp;the&nbsp;data.<br>
+&nbsp;<br>
+Todo:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Clean&nbsp;the&nbsp;code.<br>
+&nbsp;<br>
+..&nbsp;_Google&nbsp;Python&nbsp;Style&nbsp;Guide:<br>
+&nbsp;&nbsp;&nbsp;<a href="http://google.github.io/styleguide/pyguide.html">http://google.github.io/styleguide/pyguide.html</a><br>
+&nbsp;&nbsp;&nbsp;<br>
+Format&nbsp;for&nbsp;data&nbsp;loaders:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p,&nbsp;x,&nbsp;h,&nbsp;n_full,&nbsp;cate_name</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="matplotlib.mlab.html">matplotlib.mlab</a><br>
+<a href="multiprocessing.html">multiprocessing</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="os.html">os</a><br>
+<a href="pickle.html">pickle</a><br>
+</td><td width="25%" valign=top><a href="matplotlib.pyplot.html">matplotlib.pyplot</a><br>
+<a href="scipy.html">scipy</a><br>
+<a href="scipy.stats.html">scipy.stats</a><br>
+</td><td width="25%" valign=top><a href="torch.nn.functional.html">torch.nn.functional</a><br>
+<a href="time.html">time</a><br>
+<a href="torch.html">torch</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-load_100D"><strong>load_100D</strong></a>(n_sample=100000, verbose=False)</dt></dl>
+ <dl><dt><a name="-load_1d_bump_slope"><strong>load_1d_bump_slope</strong></a>(n_sample=100000, n_dim=2, random_state=0)</dt><dd><tt>Generate&nbsp;a&nbsp;1d&nbsp;simulated&nbsp;data.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_sample&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;hypotheses.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_dim&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;dimensions.&nbsp;If&nbsp;n_dim&gt;2,&nbsp;the&nbsp;rest&nbsp;of&nbsp;dimensions&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;uninformative&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;random_state&nbsp;(int):&nbsp;The&nbsp;random&nbsp;seed<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;((n,)&nbsp;ndarray):&nbsp;The&nbsp;p-value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;((n,d)&nbsp;ndarray):&nbsp;The&nbsp;covaraites.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;((n,)&nbsp;boolean&nbsp;ndarray):&nbsp;The&nbsp;ground&nbsp;truth.&nbsp;True&nbsp;indicates&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hypothesis&nbsp;is&nbsp;alternative.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_full&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;hypotheses&nbsp;before&nbsp;filtering.&nbsp;Same&nbsp;as&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n&nbsp;if&nbsp;no&nbsp;filtering&nbsp;is&nbsp;applied.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cate_name&nbsp;(dic&nbsp;of&nbsp;dics):&nbsp;(key,val)&nbsp;gives&nbsp;the&nbsp;(feature&nbsp;index,&nbsp;cate_name_dic)&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;discrete&nbsp;features.&nbsp;For&nbsp;each&nbsp;discrete&nbsp;feature,&nbsp;the&nbsp;(key,val)&nbsp;of&nbsp;the&nbsp;sub&nbsp;dic<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gives&nbsp;the&nbsp;(val,name)&nbsp;for&nbsp;all&nbsp;categories.</tt></dd></dl>
+ <dl><dt><a name="-load_2DGM"><strong>load_2DGM</strong></a>(n_samples=100000, verbose=False)</dt></dl>
+ <dl><dt><a name="-load_2DGM_slope"><strong>load_2DGM_slope</strong></a>(n_samples=100000, verbose=False)</dt></dl>
+ <dl><dt><a name="-load_2Dslope"><strong>load_2Dslope</strong></a>(n_samples=100000, verbose=False)</dt></dl>
+ <dl><dt><a name="-load_2d_bump_slope"><strong>load_2d_bump_slope</strong></a>(n_sample=100000, n_dim=2, random_state=0)</dt><dd><tt>Generate&nbsp;a&nbsp;simulated&nbsp;data.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_sample&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;hypotheses.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_dim&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;dimensions.&nbsp;If&nbsp;n_dim&gt;2,&nbsp;the&nbsp;rest&nbsp;of&nbsp;dimensions&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;uninformative&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;random_state&nbsp;(int):&nbsp;The&nbsp;random&nbsp;seed<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;((n,)&nbsp;ndarray):&nbsp;The&nbsp;p-value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;((n,d)&nbsp;ndarray):&nbsp;The&nbsp;covaraites.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;((n,)&nbsp;boolean&nbsp;ndarray):&nbsp;The&nbsp;ground&nbsp;truth.&nbsp;True&nbsp;indicates&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hypothesis&nbsp;is&nbsp;alternative.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;n_full&nbsp;(int):&nbsp;The&nbsp;number&nbsp;of&nbsp;hypotheses&nbsp;before&nbsp;filtering.&nbsp;Same&nbsp;as&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n&nbsp;if&nbsp;no&nbsp;filtering&nbsp;is&nbsp;applied.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cate_name&nbsp;(dic&nbsp;of&nbsp;dics):&nbsp;(key,val)&nbsp;gives&nbsp;the&nbsp;(feature&nbsp;index,&nbsp;cate_name_dic)&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;discrete&nbsp;features.&nbsp;For&nbsp;each&nbsp;discrete&nbsp;feature,&nbsp;the&nbsp;(key,val)&nbsp;of&nbsp;the&nbsp;sub&nbsp;dic<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gives&nbsp;the&nbsp;(val,name)&nbsp;for&nbsp;all&nbsp;categories.</tt></dd></dl>
+ <dl><dt><a name="-load_5DGM"><strong>load_5DGM</strong></a>(n_sample=100000, verbose=False)</dt></dl>
+ <dl><dt><a name="-load_GTEx"><strong>load_GTEx</strong></a>(data_name='GTEx_small', if_impute=True)</dt><dd><tt>Load&nbsp;data&nbsp;for&nbsp;the&nbsp;GTEx&nbsp;data<br>
+&nbsp;<br>
+Data&nbsp;information:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fixit:&nbsp;add&nbsp;the&nbsp;data&nbsp;information&nbsp;here.</tt></dd></dl>
+ <dl><dt><a name="-load_GTEx_1d"><strong>load_GTEx_1d</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_GTEx_Adipose_Subcutaneous"><strong>load_GTEx_Adipose_Subcutaneous</strong></a>()</dt><dd><tt>Load&nbsp;data&nbsp;for&nbsp;Adipose_Subcutaneous</tt></dd></dl>
+ <dl><dt><a name="-load_GTEx_Artery_Aorta"><strong>load_GTEx_Artery_Aorta</strong></a>()</dt><dd><tt>Load&nbsp;data&nbsp;for&nbsp;Artery_Aorta</tt></dd></dl>
+ <dl><dt><a name="-load_GTEx_Colon_Sigmoid"><strong>load_GTEx_Colon_Sigmoid</strong></a>()</dt><dd><tt>Load&nbsp;data&nbsp;for&nbsp;Colon_Sigmoid</tt></dd></dl>
+ <dl><dt><a name="-load_GTEx_full"><strong>load_GTEx_full</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_GTEx_small"><strong>load_GTEx_small</strong></a>()</dt></dl>
+ <dl><dt><a name="-load_airway"><strong>load_airway</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_bottomly"><strong>load_bottomly</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_common_dataset"><strong>load_common_dataset</strong></a>(filename, n, verbose=True)</dt></dl>
+ <dl><dt><a name="-load_data_ihw"><strong>load_data_ihw</strong></a>(random_state=0)</dt><dd><tt>data&nbsp;from&nbsp;ihw&nbsp;supp&nbsp;4.2.2</tt></dd></dl>
+ <dl><dt><a name="-load_data_sd"><strong>load_data_sd</strong></a>(n_sample=20000, random_state=0)</dt><dd><tt>Strong&nbsp;dependent&nbsp;dataset&nbsp;modelling&nbsp;LD:&nbsp;every&nbsp;5&nbsp;hypotheses&nbsp;<br>
+are&nbsp;completely&nbsp;dependent</tt></dd></dl>
+ <dl><dt><a name="-load_data_wd"><strong>load_data_wd</strong></a>(n_sample=20000, random_state=0)</dt><dd><tt>Weakly&nbsp;dependent&nbsp;dataset&nbsp;following&nbsp;the&nbsp;receipe&nbsp;of&nbsp;Sec.&nbsp;3.2,&nbsp;<br>
+from&nbsp;the&nbsp;paper&nbsp;"Strong&nbsp;control,&nbsp;conservative&nbsp;point&nbsp;estimation<br>
+and&nbsp;simultaneous&nbsp;conservative&nbsp;consistency&nbsp;of&nbsp;false&nbsp;discovery&nbsp;rates:<br>
+a&nbsp;unified&nbsp;approach"</tt></dd></dl>
+ <dl><dt><a name="-load_pasilla"><strong>load_pasilla</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_proteomics"><strong>load_proteomics</strong></a>(verbose=False)</dt></dl>
+ <dl><dt><a name="-load_simulation_data"><strong>load_simulation_data</strong></a>(filename)</dt><dd><tt>Load&nbsp;the&nbsp;simulation&nbsp;data&nbsp;with&nbsp;format:<br>
+p,&nbsp;h,&nbsp;x0,&nbsp;x1,&nbsp;x2,&nbsp;...&nbsp;for&nbsp;the&nbsp;columns<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;(str):&nbsp;path&nbsp;of&nbsp;the&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;((n,)&nbsp;ndarray):&nbsp;The&nbsp;p-value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;((n,d)&nbsp;ndarray):&nbsp;The&nbsp;covaraites.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;((n,)&nbsp;boolean&nbsp;ndarray):&nbsp;The&nbsp;ground&nbsp;truth.&nbsp;True&nbsp;indicates&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hypothesis&nbsp;is&nbsp;alternative.</tt></dd></dl>
+ <dl><dt><a name="-load_ukbb_breast_cancer"><strong>load_ukbb_breast_cancer</strong></a>(verbose=False, use_other=False)</dt></dl>
+ <dl><dt><a name="-load_x_mixture"><strong>load_x_mixture</strong></a>(opt=0)</dt><dd><tt>Generate&nbsp;a&nbsp;mixture&nbsp;data&nbsp;(of&nbsp;x)&nbsp;to&nbsp;test&nbsp;mixture_fit.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;opt&nbsp;(int):&nbsp;0:&nbsp;2d&nbsp;slope.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1:&nbsp;2d&nbsp;bump.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2:&nbsp;2d&nbsp;slope+bump.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3:&nbsp;10d&nbsp;data&nbsp;with&nbsp;slope+bump&nbsp;in&nbsp;the&nbsp;first&nbsp;2d.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;((n,d)&nbsp;ndarray):&nbsp;The&nbsp;mixture&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;param&nbsp;(list):&nbsp;Parameters&nbsp;that&nbsp;are&nbsp;used&nbsp;to&nbsp;generate&nbsp;the&nbsp;data.</tt></dd></dl>
+ <dl><dt><a name="-neuralfdr_generate_data_1D"><strong>neuralfdr_generate_data_1D</strong></a>(job=0, n_samples=10000, data_vis=0, num_case=4)</dt><dd><tt>##&nbsp;neuralFDR&nbsp;simulated&nbsp;examples</tt></dd></dl>
+ <dl><dt><a name="-neuralfdr_generate_data_2D"><strong>neuralfdr_generate_data_2D</strong></a>(job=0, n_samples=100000, data_vis=0)</dt></dl>
+ <dl><dt><a name="-toy_data_1d"><strong>toy_data_1d</strong></a>(job_id=0, n_sample=10000, vis=0)</dt><dd><tt>##&nbsp;generating&nbsp;the&nbsp;1d&nbsp;toy&nbsp;example</tt></dd></dl>
+ <dl><dt><a name="-write_simulation_data"><strong>write_simulation_data</strong></a>(p, x, h, filename)</dt><dd><tt>Write&nbsp;the&nbsp;simulation&nbsp;data&nbsp;with&nbsp;format:<br>
+p,&nbsp;h,&nbsp;x0,&nbsp;x1,&nbsp;x2,&nbsp;...&nbsp;for&nbsp;the&nbsp;columns<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;((n,)&nbsp;ndarray):&nbsp;The&nbsp;p-value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;((n,d)&nbsp;ndarray):&nbsp;The&nbsp;covaraites.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;((n,)&nbsp;boolean&nbsp;ndarray):&nbsp;The&nbsp;ground&nbsp;truth.&nbsp;True&nbsp;indicates&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hypothesis&nbsp;is&nbsp;alternative.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;(str):&nbsp;path&nbsp;of&nbsp;the&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:</tt></dd></dl>
+</td></tr></table>
+</body></html>
