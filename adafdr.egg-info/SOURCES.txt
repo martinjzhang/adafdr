@@ -1,5 +1,6 @@
 README.md
 setup.py
+adafdr/__init__.py
 adafdr/data_loader.py
 adafdr/method.py
 adafdr/sideinfo_release.py
@@ -7,7 +8,7 @@ adafdr/util.py
 adafdr.egg-info/PKG-INFO
 adafdr.egg-info/SOURCES.txt
 adafdr.egg-info/dependency_links.txt
-adafdr.egg-info/not-zip-safe
+adafdr.egg-info/requires.txt
 adafdr.egg-info/top_level.txt
 test/test_method.py
 test/test_mixture_fit.py
