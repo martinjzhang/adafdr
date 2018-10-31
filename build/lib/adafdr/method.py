@@ -5,7 +5,8 @@ from sklearn.mixture import GaussianMixture
 import torch
 from torch.autograd import Variable
 from adafdr.util import *
-import multiprocessing as mp
+# import multiprocessing as mp
+import torch.multiprocessing as mp
 import logging
 import matplotlib.pyplot as plt
 import torch.nn.functional as tf
