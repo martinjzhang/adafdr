@@ -57,13 +57,14 @@ hypothesis splitting
 ## Quick Test
 Here is a quick test. First check if the package can be succesfully imported:
 ```python
-import adafdr
+import adafdr.method as md
+import adafdr.data_loader as dl
 ```
 Next, run a small example which should take a few seconds:
 ```python
 import numpy as np
-p,x,h,_,_ = adafdr.data_loader.load_1d_bump_slope()
-n_rej,t_rej,theta = adafdr.method.adafdr_test(p, x, fast_mode=True)
+p,x,h,_,_ = dl.load_1d_bump_slope()
+n_rej,t_rej,theta = md.adafdr_test(p, x, fast_mode=True)
 D = np.sum(p<=t_rej)
 FD = np.sum((p<=t_rej)&(~h))
 print('# AdaFDR successfully finished! ')
