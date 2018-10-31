@@ -28,7 +28,7 @@ setuptools.setup(
        'numpy',
        'scipy',
        'scikit-learn',
-       'torch',
+       'torch==0.3.1',
        # 'multiprocessing',
        # 'logging',
        'matplotlib',
