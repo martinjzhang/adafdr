@@ -76,5 +76,5 @@ the result should look like:
 # D=840, FD=80, FDP=0.095
 ```
 
-## Citation
+## Citation information
 Coming soon.
