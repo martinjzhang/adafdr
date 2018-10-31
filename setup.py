@@ -27,8 +27,8 @@ setuptools.setup(
     install_requires=[
        'numpy',
        'scipy',
-       # 'sklearn',
-       # 'torch',
+       'scikit-learn',
+       'torch',
        # 'multiprocessing',
        # 'logging',
        'matplotlib',
