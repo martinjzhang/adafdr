@@ -1,10 +1,13 @@
 MANIFEST.in
 README.md
 setup.py
+adafdr/GTEx_small.pickle
 adafdr/__init__.py
 adafdr/airway
+adafdr/bottomly
 adafdr/data_loader.py
 adafdr/method.py
+adafdr/pasilla
 adafdr/sideinfo_release.py
 adafdr/util.py
 adafdr.egg-info/PKG-INFO
@@ -12,6 +15,9 @@ adafdr.egg-info/SOURCES.txt
 adafdr.egg-info/dependency_links.txt
 adafdr.egg-info/requires.txt
 adafdr.egg-info/top_level.txt
+images/explore_p_feature_1.png
+images/explore_ratio_feature_1.png
+images/threshold.png
 test/test_method.py
 test/test_mixture_fit.py
 test/test_preprocess.py

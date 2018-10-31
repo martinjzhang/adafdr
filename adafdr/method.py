@@ -372,7 +372,7 @@ def method_single_fold_wrapper(data):
 
 def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_norm=True,\
                 h=None, verbose=False, output_folder=None, random_state=0,\
-                single_core=False, fast_mode=True):
+                single_core=True, fast_mode=True):
     """Hypothesis testing with hypothesis splitting.
 
     Args:
@@ -399,6 +399,8 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
     np.random.seed(random_state)    
     p = np.copy(p_input)
     x = np.copy(x_input)
+    if fast_mode:
+        single_core = False
     if n_full is None:
         n_full = p.shape[0]
     start_time=time.time()

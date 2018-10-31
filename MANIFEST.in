@@ -1,2 +1,8 @@
 include README.md
 include adafdr/airway
+include adafdr/bottomly
+include adafdr/pasilla
+include adafdr/GTEx_small.pickle
+include images/explore_p_feature_1.png
+include images/explore_ratio_feature_1.png
+include images/threshold.png

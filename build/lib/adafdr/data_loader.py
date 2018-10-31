@@ -18,10 +18,52 @@ import pickle
 from scipy import stats
 from scipy.stats import ttest_ind
 import matplotlib.pyplot as plt
+import adafdr
 from adafdr.util import *
 from matplotlib import mlab
 from adafdr.method import *
 import logging
+
+# External datasets
+def data_airway():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/airway'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
+def data_bottomly():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/bottomly'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
+def data_pasilla():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/pasilla'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
+def data_small_gtex():
+    # Hard-coded information of the GTEx dataset.
+    cate_name = {3: {1: 'TssA', 2: 'TssAFlnk', 3: 'TxFlnk', 4: 'Tx',
+                     5: 'TxWk', 6: 'EnhG', 7: 'Enh', 8: 'ZNF/Rpts',
+                     9: 'Het', 10: 'TssBiv', 11: 'BivFlnk', 12: 'EnhBiv',
+                     13: 'ReprPC', 14: 'ReprPCWk', 15: 'Quies'}}
+    n_full = 172353475
+    fname = 'GTEx_small.pickle'
+    file_path = adafdr.__path__[0]
+    fname = file_path + '/' + fname
+    with open(fname, 'rb') as handle:  
+        p = pickle.load(handle)
+        x = pickle.load(handle)
+        cis_name = pickle.load(handle)
+    return p, x, n_full, cate_name, cis_name
 
 ## generating the 1d toy example
 def toy_data_1d(job_id=0,n_sample=10000,vis=0):
@@ -182,7 +224,7 @@ def load_x_mixture(opt=0):
         pass    
     return x,param
 
-def load_1d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
+def load_1d_bump_slope(n_sample=20000, n_dim=2, random_state=0):
     """Generate a 1d simulated data.
 
     Args:
@@ -225,7 +267,7 @@ def load_1d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
         x = np.concatenate([x,x_noise],1)
     return p,x,h,p.shape[0],{}
 
-def load_2d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
+def load_2d_bump_slope(n_sample=20000, n_dim=2, random_state=0):
     """Generate a simulated data.
 
     Args:
@@ -627,7 +669,6 @@ def load_100D(n_sample=100000,verbose=False):
     x_noise = np.random.uniform(high = 5, size = (n_sample,99))
     x = np.concatenate([np.expand_dims(x,1), x_noise], 1)
     return p,h,x
-
 
 def load_airway(verbose=False):
     file_name='/data3/martin/nfdr2_simulation_data/RNA_seq/airway'
