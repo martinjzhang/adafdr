@@ -49,6 +49,21 @@ def data_pasilla():
     p=X[:,0]
     return p, x
 
+def data_small_gtex():
+    # Hard-coded information of the GTEx dataset.
+    cate_name = {3: {1: 'TssA', 2: 'TssAFlnk', 3: 'TxFlnk', 4: 'Tx',
+                     5: 'TxWk', 6: 'EnhG', 7: 'Enh', 8: 'ZNF/Rpts',
+                     9: 'Het', 10: 'TssBiv', 11: 'BivFlnk', 12: 'EnhBiv',
+                     13: 'ReprPC', 14: 'ReprPCWk', 15: 'Quies'}}
+    n_full = 172353475
+    fname = 'GTEx_small.pickle'
+    file_path = adafdr.__path__[0]
+    fname = file_path + '/' + fname
+    with open(fname, 'rb') as handle:  
+        p = pickle.load(handle)
+        x = pickle.load(handle)
+        cis_name = pickle.load(handle)
+    return p, x, n_full, cate_name, cis_name
 
 ## generating the 1d toy example
 def toy_data_1d(job_id=0,n_sample=10000,vis=0):
@@ -209,7 +224,7 @@ def load_x_mixture(opt=0):
         pass    
     return x,param
 
-def load_1d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
+def load_1d_bump_slope(n_sample=20000, n_dim=2, random_state=0):
     """Generate a 1d simulated data.
 
     Args:
@@ -252,7 +267,7 @@ def load_1d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
         x = np.concatenate([x,x_noise],1)
     return p,x,h,p.shape[0],{}
 
-def load_2d_bump_slope(n_sample=100000, n_dim=2, random_state=0):
+def load_2d_bump_slope(n_sample=20000, n_dim=2, random_state=0):
     """Generate a simulated data.
 
     Args:
