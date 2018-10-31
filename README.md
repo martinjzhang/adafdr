@@ -31,7 +31,8 @@ The data `p,x` has the following format:
 md.adafdr_explore(p, x, output_folder=None)
 ```
 
-![p_scatter](./images/explore_p_feature_1.png ) ![ratio](./images/explore_ratio_feature_1.png )
+![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/explore_p_feature_1.png ) 
+![ratio](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/explore_ratio_feature_1.png )
 
 If `output_folder` is a folder path, figures will be saved to the folder instead of being plotted 
 in the console.
@@ -52,7 +53,7 @@ n_rej,t_rej,theta = md.adafdr_test(p, x, fast_mode=True, output_folder=None)
 
 Here, the learned threshold looks as follows. Note that the two lines correspond to the data from two folds via
 hypothesis splitting
-![p_scatter](./images/threshold.png)
+![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/threshold.png)
 
 ## Quick Test
 Here is a quick test. First check if the package can be succesfully imported:
