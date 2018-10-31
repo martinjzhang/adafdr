@@ -1,6 +1,8 @@
+MANIFEST.in
 README.md
 setup.py
 adafdr/__init__.py
+adafdr/airway
 adafdr/data_loader.py
 adafdr/method.py
 adafdr/sideinfo_release.py

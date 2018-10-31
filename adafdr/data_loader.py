@@ -18,10 +18,37 @@ import pickle
 from scipy import stats
 from scipy.stats import ttest_ind
 import matplotlib.pyplot as plt
+import adafdr
 from adafdr.util import *
 from matplotlib import mlab
 from adafdr.method import *
 import logging
+
+# External datasets
+def data_airway():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/airway'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
+def data_bottomly():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/bottomly'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
+def data_pasilla():
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/pasilla'
+    X = np.loadtxt(file_name,skiprows=0,delimiter=',')
+    x=X[:,2].reshape([-1,1])
+    p=X[:,0]
+    return p, x
+
 
 ## generating the 1d toy example
 def toy_data_1d(job_id=0,n_sample=10000,vis=0):
@@ -627,7 +654,6 @@ def load_100D(n_sample=100000,verbose=False):
     x_noise = np.random.uniform(high = 5, size = (n_sample,99))
     x = np.concatenate([np.expand_dims(x,1), x_noise], 1)
     return p,h,x
-
 
 def load_airway(verbose=False):
     file_name='/data3/martin/nfdr2_simulation_data/RNA_seq/airway'
