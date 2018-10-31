@@ -52,7 +52,8 @@ n_rej,t_rej,theta = md.adafdr_test(p, x, fast_mode=True, output_folder=None)
 `theta` is a list of learned parameters.
 
 Here, the learned threshold looks as follows. Note that the two lines correspond to the data from two folds via
-hypothesis splitting
+hypothesis splitting.
+
 ![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/threshold.png)
 
 ## Quick Test
