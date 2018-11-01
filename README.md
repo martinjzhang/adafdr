@@ -19,26 +19,29 @@ They can be imported as
 import adafdr.method as md
 import adafdr.data_loader as dl
 ```
-Other ways of importations are usually compatible. 
+Other ways of importation are usually compatible. For example, one can import the package with `import adafdr`
+and call method `xxx` in the method modele via `adafdr.method.xxx()`
 
 ### Input format
 For a set of N hypotheses, the input data includes the p-values `p` and the d-dimensional covaraites `x`, 
 with the following format:
 
 * `p`: (N,) numpy.ndarray.
-* `x`: (N,d) numpy.ndarray. When d=1, `x` is allowed to be either (N,) numpy.ndarray 
+* `x`: (N,d) numpy.ndarray. 
+
+When d=1, `x` is allowed to be either (N,) numpy.ndarray 
 or (N,1) numpy.ndarray.
 
 ### Covariate visualization
 The covariate visualization method `adafdr_explore` can be used as 
 * `adafdr.method.adafdr_explore(p, x, output_folder=None)`
 
-If the output_folder in not `None`, the covariate visualization figures will be 
+If the output_folder is not `None`, the covariate visualization figures will be 
 saved into `output_folder`. Otherwise, they will show up on the console.
 
 ### Multiple testing
 The multiple hypotehsis testing method `adafdr_test` can be used as 
-* fast version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
+* fast version (default): `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
 * regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
 * regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=false)`
 
@@ -50,7 +53,7 @@ The multiple hypotehsis testing method `adafdr_test` can be used as
 If `output_folder` is a folder path, log files will be saved in the folder. 
 
 ## Example on airway data
-The following is an example on the airway data
+The following is an example on the airway RNA-seq data
 used in the paper.
 ### Import package and load data
 `adafdr.method` contains the algorithm implementation while `adafdr.data_loader` can be 
@@ -77,10 +80,10 @@ to be significant if the covariate (gene expression) value is larger.
 
 ### Multiple hypothesis testing using `adafdr_test`
 ```python
-n_rej,t_rej,theta = md.adafdr_test(p, x, fast_mode=True, output_folder=None)
+res = md.adafdr_test(p, x, fast_mode=True, output_folder=None)
 ```
 
-Here, the learned threshold looks as follows. Note that the two lines correspond to the data from two folds via
+Here, the learned threshold `res['t_rej']` looks as follows. Note that the two lines correspond to the data from two folds via
 hypothesis splitting.
 
 ![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/threshold.png)
@@ -96,7 +99,8 @@ Next, run a small example which should take a few seconds:
 ```python
 import numpy as np
 p,x,h,_,_ = dl.load_1d_bump_slope()
-n_rej,t_rej,theta = md.adafdr_test(p, x, alpha=0.1, fast_mode=True)
+res = md.adafdr_test(p, x, alpha=0.1)
+t_rej = res['t_rej']
 D = np.sum(p<=t_rej)
 FD = np.sum((p<=t_rej)&(~h))
 print('# AdaFDR successfully finished! ')
