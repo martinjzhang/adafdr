@@ -104,7 +104,7 @@ res = md.adafdr_test(p, x, alpha=0.1)
 t_rej = res['t_rej']
 D = np.sum(p<=t_rej)
 FD = np.sum((p<=t_rej)&(~h))
-print('# AdaFDR successfully finished! ')
+print('# AdaFDR successfully finished!')
 print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
 ```
 It runs *AdaFDR-fast* on a 1d simulated data. If the package is successfully imported, 
