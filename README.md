@@ -31,16 +31,16 @@ or (N,1) numpy.ndarray.
 
 ### Covariate visualization
 The covariate visualization method `adafdr_explore` can be used as 
-* `adafdr_explore(p, x, output_folder=None)`
+* `adafdr.method.adafdr_explore(p, x, output_folder=None)`
 
-where if the output_folder in not `None`, the covariate visualization figures will be 
+If the output_folder in not `None`, the covariate visualization figures will be 
 saved into `output_folder`. Otherwise, they will show up on the console.
 
 ### Multiple testing
 The multiple hypotehsis testing method `adafdr_test` can be used as 
-* fast version: `res = md.adafdr_test(p, x, alpha=0.1)`
-* regular version: `res = md.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
-* regular version with multi-core: `res = md.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=false)`
+* fast version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
+* regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
+* regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=false)`
 
 `res` is a dictionary containing the results, including:
 * `res['h_hat']`: a (N,) boolean vector with testing results for each hypothesis, with value 1 meaning rejection.
@@ -86,7 +86,7 @@ hypothesis splitting.
 ![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/threshold.png)
 
 ## Quick Test
-### Basic test
+<!-- ### Basic test -->
 Here is a quick test. First check if the package can be succesfully imported:
 ```python
 import adafdr.method as md
@@ -109,33 +109,35 @@ the result should look like:
 # D=840, FD=80, FDP=0.095
 ```
 
-% ### Compatibility testing for multi-core processing
-% *AdaFDR* also offers a multi-core version where the hypotheses from the two folds 
-% are processed in parallel. Due to some compatibility issues (of `PyTorch` and `multiprocessing`),
-% in some rare cases the machine will get stuck when running the regular version of *adafdr_test* 
-% with multi-core processing (the fast version is always fine). To check it, run the following 
-% 
-% ```python
-% import adafdr.method as md
-% import adafdr.data_loader as dl
-% import numpy as np
-% p,x,h,_,_ = dl.load_1d_bump_slope()
-% n_rej,t_rej,theta = md.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)
-% D = np.sum(p<=t_rej)
-% FD = np.sum((p<=t_rej)&(~h))
-% print('# AdaFDR successfully finished! ')
-% print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
-% ```
-% 
-% If the machine is compatible with the multi-core processing, the following output will show up within a minute or two:
-% ```
-% # AdaFDR successfully finished! 
-% # D=823, FD=83, FDP=0.101
-% ```
-% If nothing shows up in more than 3 minutes, then the machine is not compatible with 
-% multi-core processing. Then it is recommended to use `md.adafdr_test(p, x, alpha=0.1)` 
-% for the fast version and `md.adafdr_test(p, x, alpha=0.1, fast_mode=False)` for the regular 
-% version with single-core processing.
+<!-- 
+### Compatibility testing for multi-core processing
+*AdaFDR* also offers a multi-core version where the hypotheses from the two folds 
+are processed in parallel. Due to some compatibility issues (of `PyTorch` and `multiprocessing`),
+in some rare cases the machine will get stuck when running the regular version of *adafdr_test* 
+with multi-core processing (the fast version is always fine). To check it, run the following 
+
+```python
+import adafdr.method as md
+import adafdr.data_loader as dl
+import numpy as np
+p,x,h,_,_ = dl.load_1d_bump_slope()
+n_rej,t_rej,theta = md.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)
+D = np.sum(p<=t_rej)
+FD = np.sum((p<=t_rej)&(~h))
+print('# AdaFDR successfully finished! ')
+print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
+```
+
+If the machine is compatible with the multi-core processing, the following output will show up within a minute or two:
+```
+# AdaFDR successfully finished! 
+# D=823, FD=83, FDP=0.101
+```
+If nothing shows up in more than 3 minutes, then the machine is not compatible with 
+multi-core processing. Then it is recommended to use `md.adafdr_test(p, x, alpha=0.1)` 
+for the fast version and `md.adafdr_test(p, x, alpha=0.1, fast_mode=False)` for the regular 
+version with single-core processing.
+-->
 
 ## Citation information
 Coming soon.
