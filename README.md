@@ -20,7 +20,7 @@ import adafdr.method as md
 import adafdr.data_loader as dl
 ```
 Other ways of importing are usually compatible. For example, one can import the package with `import adafdr`
-and call method `xxx` in the method modele via `adafdr.method.xxx()`
+and call method `xxx` in the method module via `adafdr.method.xxx()`
 
 ### Input format
 For a set of N hypotheses, the input data includes the p-values `p` and the d-dimensional covaraites `x`, 
