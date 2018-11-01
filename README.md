@@ -35,7 +35,7 @@ or (N,1) numpy.ndarray.
 ### Covariate visualization
 The covariate visualization method `adafdr_explore` can be used as 
 ```python
-adafdr.method.adafdr_explore(p, x, output_folder=None)`
+adafdr.method.adafdr_explore(p, x, output_folder=None)
 ```
 If the `output_folder` is not `None`, the covariate visualization figures will be 
 saved into `output_folder`. Otherwise, they will show up on the console.
@@ -53,7 +53,7 @@ The multiple hypotehsis testing method `adafdr_test` can be used as
 * `res['theta']`: a list of learned parameters.
 If `output_folder` is a folder path, log files will be saved in the folder. 
 
-## Example on airway data
+## Example on airway RNA-seq data
 The following is an example on the airway RNA-seq data
 used in the paper.
 ### Import package and load data
