@@ -136,7 +136,7 @@ print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
 If the machine is compatible with the multi-core processing, the following output will show up within a minute or two:
 ```
 # AdaFDR successfully finished! 
-# D=823, FD=83, FDP=0.101
+# D=819, FD=75, FDP=0.092
 ```
 If nothing shows up in more than 3 minutes, then the machine is not compatible with 
 multi-core processing. Then it is recommended to use `md.adafdr_test(p, x, alpha=0.1)` 
