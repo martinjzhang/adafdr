@@ -4,7 +4,7 @@ A fast and covariate-adaptive method for multiple hypothesis testing.
 Software accompanying the paper "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing", 2018.
 
 ## Requirement
-* AdaFDR is run on python 3.
+* AdaFDR runs on python 3.
 
 ## Installation
 ```
@@ -19,7 +19,7 @@ They can be imported as
 import adafdr.method as md
 import adafdr.data_loader as dl
 ```
-Other ways of importation are usually compatible. For example, one can import the package with `import adafdr`
+Other ways of importing are usually compatible. For example, one can import the package with `import adafdr`
 and call method `xxx` in the method modele via `adafdr.method.xxx()`
 
 ### Input format
@@ -34,9 +34,10 @@ or (N,1) numpy.ndarray.
 
 ### Covariate visualization
 The covariate visualization method `adafdr_explore` can be used as 
-* `adafdr.method.adafdr_explore(p, x, output_folder=None)`
-
-If the output_folder is not `None`, the covariate visualization figures will be 
+```python
+adafdr.method.adafdr_explore(p, x, output_folder=None)`
+```
+If the `output_folder` is not `None`, the covariate visualization figures will be 
 saved into `output_folder`. Otherwise, they will show up on the console.
 
 ### Multiple testing
@@ -58,7 +59,7 @@ used in the paper.
 ### Import package and load data
 `adafdr.method` contains the algorithm implementation while `adafdr.data_loader` can be 
 used to load the data used in the paper. Here we load the *airway* data used in the paper.
-See vignette for other data accompanied with the package. 
+See [vignette](./vignette) for other data accompanied with the package. 
 ```python
 import adafdr.method as md
 import adafdr.data_loader as dl
