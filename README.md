@@ -41,7 +41,7 @@ If the `output_folder` is not `None`, the covariate visualization figures will b
 saved into `output_folder`. Otherwise, they will show up on the console.
 
 ### Multiple testing
-The multiple hypotehsis testing method `adafdr_test` can be used as 
+The multiple hypothesis testing method `adafdr_test` can be used as 
 * fast version (default): `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
 * regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
 * regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)`
@@ -75,7 +75,7 @@ md.adafdr_explore(p, x, output_folder=None)
 ![ratio](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/explore_ratio_feature_1.png )
 
 Here, the left is a scatter plot of each hypothesis with p-values (y-axis) against the covariate (x-axis). 
-The right are the estimated null hypothesis distribution (blue) and the estimated alternative hypothesis 
+The right shows the estimated null hypothesis distribution (blue) and the estimated alternative hypothesis 
 distribution (orange) with respect to the covariate. Here we can conclude that a hypothesis is more likely
 to be significant if the covariate (gene expression) value is larger.
 
@@ -91,7 +91,7 @@ hypothesis splitting.
 
 ## Quick Test
 <!-- ### Basic test -->
-Here is a quick test. First check if the package can be succesfully imported:
+Here is a quick test. First check if the package can be successfully imported:
 ```python
 import adafdr.method as md
 import adafdr.data_loader as dl
