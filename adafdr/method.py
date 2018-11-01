@@ -459,8 +459,10 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
                 plt.ylabel('p-value')
             plt.savefig(output_folder+'/learned_threshold.png')
             plt.close()
-        print('#time total: %0.4fs'%(time.time()-start_time))         
-    return n_rej, t, theta
+        print('#time total: %0.4fs'%(time.time()-start_time))
+    res_adafdr = {'n_rej':n_rej, 'h_hat':p_input<=t, 't_rej':t, 'theta':theta}
+    return res_adafdr
+    # return (p_input<=t), t, theta
 
 def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
                        n_itr=1500, h=None, verbose=False,\
