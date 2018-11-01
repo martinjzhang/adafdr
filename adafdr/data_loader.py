@@ -27,7 +27,7 @@ import logging
 # External datasets
 def data_airway():
     file_path = adafdr.__path__[0]
-    file_name = file_path + '/airway'
+    file_name = file_path + '/data/airway'
     X = np.loadtxt(file_name,skiprows=0,delimiter=',')
     x=X[:,2].reshape([-1,1])
     p=X[:,0]
@@ -35,7 +35,7 @@ def data_airway():
 
 def data_bottomly():
     file_path = adafdr.__path__[0]
-    file_name = file_path + '/bottomly'
+    file_name = file_path + '/data/bottomly'
     X = np.loadtxt(file_name,skiprows=0,delimiter=',')
     x=X[:,2].reshape([-1,1])
     p=X[:,0]
@@ -43,7 +43,7 @@ def data_bottomly():
 
 def data_pasilla():
     file_path = adafdr.__path__[0]
-    file_name = file_path + '/pasilla'
+    file_name = file_path + '/data/pasilla'
     X = np.loadtxt(file_name,skiprows=0,delimiter=',')
     x=X[:,2].reshape([-1,1])
     p=X[:,0]
@@ -58,7 +58,7 @@ def data_small_gtex():
     n_full = 172353475
     fname = 'GTEx_small.pickle'
     file_path = adafdr.__path__[0]
-    fname = file_path + '/' + fname
+    fname = file_path + '/data/' + fname
     with open(fname, 'rb') as handle:  
         p = pickle.load(handle)
         x = pickle.load(handle)

@@ -1,5 +1,5 @@
 include README.md
-include adafdr/airway
-include adafdr/bottomly
-include adafdr/pasilla
-include adafdr/GTEx_small.pickle
+include adafdr/data/airway
+include adafdr/data/bottomly
+include adafdr/data/pasilla
+include adafdr/data/GTEx_small.pickle
