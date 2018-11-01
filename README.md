@@ -23,7 +23,7 @@ Other ways of importing are usually compatible. For example, one can import the 
 and call method `xxx` in the method module via `adafdr.method.xxx()`
 
 ### Input format
-For a set of N hypotheses, the input data includes the p-values `p` and the d-dimensional covaraites `x`, 
+For a set of N hypotheses, the input data includes the p-values `p` and the d-dimensional covariate `x`, 
 with the following format:
 
 * `p`: (N,) numpy.ndarray.
@@ -38,7 +38,7 @@ The covariate visualization method `adafdr_explore` can be used as
 adafdr.method.adafdr_explore(p, x, output_folder=None)
 ```
 If the `output_folder` is not `None`, the covariate visualization figures will be 
-saved into `output_folder`. Otherwise, they will show up on the console.
+saved in `output_folder`. Otherwise, they will show up in the console.
 
 ### Multiple testing
 The multiple hypothesis testing method `adafdr_test` can be used as 
@@ -47,9 +47,9 @@ The multiple hypothesis testing method `adafdr_test` can be used as
 * regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)`
 
 `res` is a dictionary containing the results, including:
-* `res['decision']`: a (N,) boolean vector with testing results for each hypothesis, with value 1 meaning rejection.
+* `res['decision']`: a (N,) boolean vector, decision for each hypothesis with value 1 meaning rejection.
 <!-- * `res['n_rej']`: the number of rejections (on each fold). -->
-* `res['threshold']`: a (N,) float vector with decision threshold for each hypothesis.
+* `res['threshold']`: a (N,) float vector, threshold for each hypothesis.
 <!--* `res['theta']`: a list of learned parameters. -->
 If `output_folder` is a folder path, log files will be saved in the folder. 
 
@@ -57,8 +57,7 @@ If `output_folder` is a folder path, log files will be saved in the folder.
 The following is an example on the airway RNA-seq data
 used in the paper.
 ### Import package and load data
-`adafdr.method` contains the algorithm implementation while `adafdr.data_loader` can be 
-used to load the data used in the paper. Here we load the *airway* data used in the paper.
+Here we load the *airway* data used in the paper.
 See [vignette](./vignette) for other data accompanied with the package. 
 ```python
 import adafdr.method as md
@@ -74,20 +73,21 @@ md.adafdr_explore(p, x, output_folder=None)
 ![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/explore_p_feature_1.png ) 
 ![ratio](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/explore_ratio_feature_1.png )
 
-Here, the left is a scatter plot of each hypothesis with p-values (y-axis) against the covariate (x-axis). 
-The right shows the estimated null hypothesis distribution (blue) and the estimated alternative hypothesis 
+Here, the left is a scatter plot of each hypothesis with p-values (y-axis) plotted against the covariate (x-axis). 
+The right panel shows the estimated null hypothesis distribution (blue) and the estimated alternative hypothesis 
 distribution (orange) with respect to the covariate. Here we can conclude that a hypothesis is more likely
-to be significant if the covariate (gene expression) value is larger.
+to be significant if the covariate (gene expression) value is higher.
 
 ### Multiple hypothesis testing using `adafdr_test`
 ```python
 res = md.adafdr_test(p, x, fast_mode=True, output_folder=None)
 ```
 
-Here, the learned threshold `res['t_rej']` looks as follows. Note that the two lines correspond to the data from two folds via
-hypothesis splitting.
+Here, the learned threshold `res['threshold']` looks as follows.
 
 ![p_scatter](https://raw.githubusercontent.com/martinjzhang/adafdr/master/images/threshold.png)
+
+Each orange dot corresponds to the threhsold to one hypothesis. The discrepancy at the right is due to the difference between the thresholds learned by the two folds.
 
 ## Quick Test
 <!-- ### Basic test -->
