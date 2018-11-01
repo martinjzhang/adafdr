@@ -86,13 +86,14 @@ def test_preprocess_two_fold():
     assert (x_test_new_2[1] > 0.5) and (x_test_new_2[1] < 0.75)
     assert (x_test_new_2[2] > 0.25) and (x_test_new_2[2] < 0.5)
     assert x_test_new_2[3] < 0.25
-def test_method_hs():
-    """ Test for method_hs
+def test_adafdr_test():
+    """ Test for adafdr_test
     """
     p, x, h, n_full, _ = dl.load_2d_bump_slope(n_sample=20000)
-    _,t,_=md.method_hs(p, x, K=2, alpha=0.1, h=None, n_full=n_full,\
-                       n_itr=50, verbose=False, random_state=0,\
-                       single_core=True)
+    res = md.adafdr_test(p, x, K=2, alpha=0.1, h=None, n_full=n_full,\
+                         n_itr=50, verbose=False, random_state=0,\
+                         single_core=True)
+    t = res['t_rej']
     FDP = np.sum((p < t)*(h == 0))/np.sum(p < t)
     n_rej = np.sum(p < t)
     print('n_rej', n_rej)
