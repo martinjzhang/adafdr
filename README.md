@@ -47,10 +47,10 @@ The multiple hypotehsis testing method `adafdr_test` can be used as
 * regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)`
 
 `res` is a dictionary containing the results, including:
-* `res['h_hat']`: a (N,) boolean vector with testing results for each hypothesis, with value 1 meaning rejection.
-* `res['n_rej']`: the number of rejections (on each fold).
-* `res['t_rej']`: a (N,) float vector with decision threshold for each hypothesis.
-* `res['theta']`: a list of learned parameters.
+* `res['decision']`: a (N,) boolean vector with testing results for each hypothesis, with value 1 meaning rejection.
+<!-- * `res['n_rej']`: the number of rejections (on each fold). -->
+* `res['threshold']`: a (N,) float vector with decision threshold for each hypothesis.
+<!--* `res['theta']`: a list of learned parameters. -->
 If `output_folder` is a folder path, log files will be saved in the folder. 
 
 ## Example on airway RNA-seq data
@@ -101,9 +101,9 @@ Next, run a small example which should take a few seconds:
 import numpy as np
 p,x,h,_,_ = dl.load_1d_bump_slope()
 res = md.adafdr_test(p, x, alpha=0.1)
-t_rej = res['t_rej']
-D = np.sum(p<=t_rej)
-FD = np.sum((p<=t_rej)&(~h))
+t = res['threshold']
+D = np.sum(p<=t)
+FD = np.sum((p<=t)&(~h))
 print('# AdaFDR successfully finished!')
 print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
 ```
