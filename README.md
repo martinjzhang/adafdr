@@ -44,7 +44,7 @@ saved into `output_folder`. Otherwise, they will show up on the console.
 The multiple hypotehsis testing method `adafdr_test` can be used as 
 * fast version (default): `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
 * regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
-* regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=false)`
+* regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)`
 
 `res` is a dictionary containing the results, including:
 * `res['h_hat']`: a (N,) boolean vector with testing results for each hypothesis, with value 1 meaning rejection.
@@ -129,7 +129,7 @@ p,x,h,_,_ = dl.load_1d_bump_slope()
 n_rej,t_rej,theta = md.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)
 D = np.sum(p<=t_rej)
 FD = np.sum((p<=t_rej)&(~h))
-print('# AdaFDR successfully finished! ')
+print('# AdaFDR successfully finished!')
 print('# D=%d, FD=%d, FDP=%0.3f'%(D, FD, FD/D))
 ```
 
