@@ -1,4 +1,6 @@
 ## AdaFDR
+[![GitHub version](https://badge.fury.io/gh/martinjzhang%2Fadafdr.svg)](https://badge.fury.io/gh/martinjzhang%2Fadafdr) [![PyPI version](https://badge.fury.io/py/adafdr.svg)](https://badge.fury.io/py/adafdr)
+
 A fast and covariate-adaptive method for multiple hypothesis testing. 
 
 Software accompanying the paper "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing", 2018.
