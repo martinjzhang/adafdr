@@ -93,7 +93,7 @@ def test_adafdr_test():
     res = md.adafdr_test(p, x, K=2, alpha=0.1, h=None, n_full=n_full,\
                          n_itr=50, verbose=False, random_state=0,\
                          single_core=True)
-    t = res['t_rej']
+    t = res['threshold']
     FDP = np.sum((p < t)*(h == 0))/np.sum(p < t)
     n_rej = np.sum(p < t)
     print('n_rej', n_rej)

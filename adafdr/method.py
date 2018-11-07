@@ -428,6 +428,7 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
     else:
         po = mp.Pool(2)
         res = po.map(method_single_fold_wrapper, Y_input)
+        po.close()
     # Summarize the result.
     n_rej = [res[0][0], res[1][0]]
     t = np.zeros([n_sample], dtype=float)
@@ -709,6 +710,16 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     Returns:
         (float): the rescale factor.
     """
+    def get_FD_hat(p_, t_):
+        """ mirror estimate: when the estimated values are two small,
+            use the estimates from BH
+        """
+        FD_hat = np.sum(p_ > 1-t_)
+        if FD_hat >= 5:
+            return FD_hat
+        else:
+            return min(5, np.sum(t_))
+        
     if f_write is not None:
         f_write.write('\n## rescale_mirror: %s\n'%title)    
     # Rescale t to a sensible region.
@@ -716,7 +727,7 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     if t.clip(max=t_999).mean()>0.2:
         gamma_pre = 0.2/t.clip(max=t_999).mean()
     else: 
-        gamma_pre=1
+        gamma_pre = 1
     t = t*gamma_pre
     if f_write is not None:
         f_write.write('# quantile of t (1,25,75,99): %s\n'%(np.percentile(t,[1,25,75,99])))
@@ -725,7 +736,8 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     gamma_grid = np.linspace(0, 0.2/np.mean(t), 50)[1:]
     alpha_hat = np.zeros([gamma_grid.shape[0]], dtype=float)
     for i in range(gamma_grid.shape[0]):
-        alpha_hat[i] = np.sum(p>1-t*gamma_grid[i])/max(np.sum(p<t*gamma_grid[i]), 1)
+        # alpha_hat[i] = max(1, np.sum(p>1-t*gamma_grid[i]))/max(1, np.sum(p<t*gamma_grid[i]))
+        alpha_hat[i] = get_FD_hat(p, t*gamma_grid[i])/max(1, np.sum(p<t*gamma_grid[i]))
     if np.sum(alpha_hat<alpha) > 0:
         gamma_l = np.max(gamma_grid[alpha_hat<alpha])
     else:
@@ -734,23 +746,31 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
         gamma_u = np.min(gamma_grid[alpha_hat>alpha])
     else:
         gamma_u = gamma_grid[-1]
+    gamma_l = min(gamma_l, gamma_u-gamma_grid[1]+gamma_grid[0])
     # Binary search.
     gamma_m = (gamma_u+gamma_l)/2    
-    while gamma_u-gamma_l>1e-2 or (np.sum(p>1-t*gamma_m)/max(np.sum(p<t*gamma_m), 1) > alpha):
+    # while (gamma_u-gamma_l>1e-2) or (max(1, np.sum(p>1-t*gamma_m))/max(1, np.sum(p<t*gamma_m)) > alpha):
+    while (gamma_u-gamma_l>1e-2) or (get_FD_hat(p, t*gamma_m)/max(1, np.sum(p<t*gamma_m)) > alpha):
         gamma_m = (gamma_l+gamma_u)/2
-        D_hat = max(np.sum(p<t*gamma_m), 1)
-        FD_hat = np.sum(p>1-t*gamma_m)
-        alpha_hat = FD_hat/D_hat         
+        D_hat = max(1, np.sum(p<t*gamma_m))
+        # FD_hat = max(1, np.sum(p>1-t*gamma_m))
+        FD_hat = get_FD_hat(p, t*gamma_m)
+        alpha_hat = FD_hat/D_hat
         if f_write is not None:
-            f_write.write('# gamma_l=%0.4f, gamma_u=%0.4f, D_hat=%d, FD_hat=%d, alpha_hat=%0.4f\n'%\
-                         (gamma_l,gamma_u,D_hat,FD_hat,alpha_hat))
+            f_str = '# gamma_l=%0.4f, gamma_u=%0.4f, D_hat=%d, FD_hat=%0.2f, alpha_hat=%0.4f\n'%\
+                    (gamma_l,gamma_u,D_hat,FD_hat,alpha_hat)
+            f_write.write(f_str)
         if alpha_hat < alpha:
             gamma_l = gamma_m
         else: 
-            gamma_u = gamma_m    
+            gamma_u = gamma_m
+        if (D_hat==1) and (FD_hat==1):
+            gamma_u = 0
+            gamma_l = 0
+            break
     if f_write is not None:
         f_write.write('# final output: gamma=%0.4f\n'%((gamma_u+gamma_l)/2*gamma_pre))
-    return (gamma_u+gamma_l)/2*gamma_pre 
+    return max((gamma_u+gamma_l)/2*gamma_pre, 1e-20) 
 
 def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=False,
                 output_folder=None, random_state=0, fold_number=0, f_write=None):
@@ -1172,10 +1192,12 @@ def sbh_test(p,alpha=0.1,lamb=0.5,n_full=None,verbose=False):
         n_full = p.shape[0]
     if n_full > p.shape[0]:
         lamb = np.min(p[p>0.5])
-    print('lamb= %0.4f'%lamb)
+    if verbose:
+        print('lamb= %0.4f'%lamb)
     pi0_hat  = (np.sum(p>lamb)/(1-lamb)/n_full).clip(max=1)  
     alpha   /= pi0_hat
-    print('## pi0_hat=%0.3f'%pi0_hat) 
+    if verbose:
+        print('## pi0_hat=%0.3f'%pi0_hat) 
     p_sort = sorted(p)
     n_rej = 0
     for i in range(p.shape[0]):
