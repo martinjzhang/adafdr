@@ -60,7 +60,7 @@ The following is an example on the airway RNA-seq data
 used in the paper.
 ### Import package and load data
 Here we load the *airway* data used in the paper.
-See [vignette](./vignette) for other data accompanied with the package. 
+See [vignettes](./vignettes) for other data accompanied with the package. 
 ```python
 import adafdr.method as md
 import adafdr.data_loader as dl
