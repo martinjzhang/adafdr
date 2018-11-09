@@ -644,7 +644,8 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
         result_summary(p<t, h=h, f_write=f_write, title='method_single_fold_%d'%fold_number)
     theta = [a,b,w,mu,sigma,gamma]
     if n_rej < 0.9*res_fast[0]:
-        f_write.write('# Optimization not yielding meaningful result. Exit with fast mode')
+        if f_write is not None:
+            f_write.write('# Optimization not yielding meaningful result. Exit with fast mode')
         return res_fast
     return n_rej, t, theta
 
