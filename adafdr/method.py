@@ -516,13 +516,16 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     gamma = rescale_mirror(t,p,alpha,f_write=f_write,title='before optimization')
     t = gamma*t
     b,w = b+np.log(gamma),w+np.log(gamma)
+    # Make a copy of adafdr-fast result
+    res_fast = (np.sum(p < t), t.copy(), [a,b,w,mu,sigma,gamma])
     # Return the result without optimization.
-    if fast_mode or (np.sum(p<t)<100):
+    if fast_mode or (np.sum(p<t)<100) or (np.sum(p>1-t)<20):
         if f_write is not None:
-            f_write.write('\n# Less than 100 discoveries. Switch to fast mode\n')
-        n_rej = np.sum(p < t)
-        theta = [a,b,w,mu,sigma,gamma]
-        return n_rej, t, theta
+            temp_str = 'Too few discoveries for optimization: ' +\
+                       'D=%d, FD_hat=%d, '%(np.sum(p<t), np.sum(p>1-t)) +\
+                       'Exit with fast mode result.\n'
+            f_write.write(temp_str)
+        return res_fast
     # Setting parameters for the optimization.
     # lambda0: adaptively set based on the approximation accuracy of the sigmoid function.
     lambda0,n_rej,n_fd = 1/t.mean(),max(np.sum(p<t),1),np.sum(p>1-t)
@@ -640,6 +643,9 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
             f_write.write('\n## Test result with method_single_fold\n')
         result_summary(p<t, h=h, f_write=f_write, title='method_single_fold_%d'%fold_number)
     theta = [a,b,w,mu,sigma,gamma]
+    if n_rej < 0.9*res_fast[0]:
+        f_write.write('# Optimization not yielding meaningful result. Exit with fast mode')
+        return res_fast
     return n_rej, t, theta
 
 def reparametrize(a_init, mu_init, sigma_init, w_init, d):

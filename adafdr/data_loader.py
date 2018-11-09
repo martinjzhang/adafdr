@@ -65,6 +65,22 @@ def data_small_gtex():
         cis_name = pickle.load(handle)
     return p, x, n_full, cate_name, cis_name
 
+def data_small_gtex_chr21(opt='Adipose_Subcutaneous'):
+    np.random.seed(0)
+    # Hard-coded information of the GTEx dataset.
+    cate_name = {3: {1: 'TssA', 2: 'TssAFlnk', 3: 'TxFlnk', 4: 'Tx',
+                     5: 'TxWk', 6: 'EnhG', 7: 'Enh', 8: 'ZNF/Rpts',
+                     9: 'Het', 10: 'TssBiv', 11: 'BivFlnk', 12: 'EnhBiv',
+                     13: 'ReprPC', 14: 'ReprPCWk', 15: 'Quies'}}
+    file_path = adafdr.__path__[0]
+    file_name = file_path + '/data/%s_chr21_300k'%opt
+    temp_data = np.loadtxt(file_name, dtype=str, delimiter=',')
+    p = temp_data[:, 0].astype(float)
+    cis_name = temp_data[:, 1]
+    x = temp_data[:, 2:].astype(float)
+    x[:, 0] = np.log10(x[:, 0]+0.5) + np.random.rand(x.shape[0])*1e-8       
+    return p, x, cate_name, cis_name
+
 ## generating the 1d toy example
 def toy_data_1d(job_id=0,n_sample=10000,vis=0):
     def pi1_gen(x): # need to be fixed 
@@ -418,7 +434,6 @@ def neuralfdr_generate_data_1D(job=0, n_samples=10000,data_vis=0, num_case=4):
                 h[i] = 1
         return p,h,X
    
-    
 def neuralfdr_generate_data_2D(job=0, n_samples=100000,data_vis=0):
     np.random.seed(42)
     if job == 0: # Gaussian mixtures 
@@ -492,9 +507,7 @@ def neuralfdr_generate_data_2D(job=0, n_samples=100000,data_vis=0):
             ax2.legend((alt,nul),('50 alternatives', '50 nulls'))
             
         return p, h, X
-        
-        
-        
+       
     if job == 2: # Gaussian mixture + linear trend
         x1 = np.random.uniform(-1,1,size = n_samples)
         x2 = np.random.uniform(-1,1,size = n_samples)
@@ -903,6 +916,9 @@ def load_GTEx(data_name='GTEx_small', if_impute=True):
             cis_name = cis_name[~ind_nan]
         # Expression level.
         x[:, 0] = np.log10(x[:, 0]+0.5)
+        if suffix == 'chr21':
+            np.random.seed(0)
+            x[:, 0] = x[:, 0] + np.random.rand(x.shape[0])*1e-8
         x = x[p<1, :]
         cis_name = cis_name[p<1]
         p = p[p<1]      

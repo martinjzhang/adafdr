@@ -3,3 +3,5 @@ include adafdr/data/airway
 include adafdr/data/bottomly
 include adafdr/data/pasilla
 include adafdr/data/GTEx_small.pickle
+include adafdr/data/Adipose_Subcutaneous_chr21_300k
+include adafdr/data/Adipose_Visceral_Omentum_chr21_300k

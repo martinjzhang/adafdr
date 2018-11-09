@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="adafdr",
-    version="0.0.9",
+    version="0.1.2",
     author="Martin Zhang, Fei Xia, James Zou",
     author_email="jinye@stanford.edu",
     description="A fast and covariate-adaptive method for multiple hypothesis testing",
