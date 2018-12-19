@@ -54,7 +54,7 @@ def feature_preprocess(x, qt_norm=True, continous_rank=True):
 def get_feature_type(x):
     """ Tell if a feature is continuous or discrete.
     """
-    if np.unique(x).shape[0]<100:
+    if np.unique(x).shape[0]<75:
         return 'discrete'
     else: 
         return 'continuous'
@@ -106,7 +106,7 @@ def reorder_discrete(x, x_val, x_order):
 
 def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
                            cate_name={}, output_folder=None,\
-                           title_list=None, h=None):
+                           title_list=None, h=None, figsize=[5,3]):
     """Provide a visualization of pi1/pi0 for each dimension,
     to visualize the amount of information carried in each dimension.
     
@@ -126,11 +126,11 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
         title_list (list of strings): Titles for each figure. 
         h ((n,) ndarray): The ground truth (None if not available). 
     
-    Returns:
+        Returns:
     """
     def plot_feature_1d(x_margin, p, x_null, x_alt, meta_info,\
                         title='',cate_name=None, output_folder=None,\
-                        h=None, ):
+                        h=None, figsize=[5,3]):
         # Some parameters for generating the figures.
         feature_type,cate_order,x_val_ = meta_info       
         x_min,x_max = np.percentile(x_margin, [1,99])
@@ -182,10 +182,10 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
         # Generate the figure.
         rnd_idx=np.random.permutation(p.shape[0])[0:np.min([10000, p.shape[0]])]
         if feature_type == 'continuous':
-            pts_jitter = 0*(np.random.rand(10000)-0.5)
+            pts_jitter = 0*(np.random.rand(np.min([10000, p.shape[0]]))-0.5)
         else:
-            pts_jitter = 0.75*(np.random.rand(10000)-0.5)
-        plt.figure(figsize=[5, 3])
+            pts_jitter = 0.75*(np.random.rand(np.min([10000, p.shape[0]]))-0.5)
+        plt.figure(figsize=figsize)
         p = p[rnd_idx]
         x_margin = x_margin[rnd_idx]
         # Ground truth.
@@ -212,7 +212,7 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
             plt.close()
         else:
             plt.show()
-        plt.figure(figsize=[5, 3])
+        plt.figure(figsize=figsize)
         plt.bar(x_grid, p_null, width=bin_width, color='steelblue', alpha=0.6, label='null')
         plt.bar(x_grid, p_alt, width=bin_width, color='orange', alpha=0.6, label='alt')
         plt.xlim([x_min, x_max])
@@ -278,7 +278,8 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
             temp_title = 'feature_%s'%str(i+1)
         plot_feature_1d(x_margin, p, temp_null, temp_alt,\
                         meta_info[i], title=temp_title,\
-                        cate_name=temp_cate_name, output_folder=output_folder, h=h)            
+                        cate_name=temp_cate_name, output_folder=output_folder,\
+                        h=h, figsize=figsize)            
 
 def preprocess_two_fold(p1, x1, x2, n_full, f_write):
     """Data preprocessing two folds of data. Note that to prevent overfitting,
@@ -362,7 +363,7 @@ def method_single_fold_wrapper(data):
     a,b,w,mu,sigma,gamma = theta
     # Test on the second fold
     t2 = t_cal(x2,a,b,w,mu,sigma)
-    gamma = rescale_mirror(t2,p2,alpha,f_write=f_write,title='cv')
+    gamma = rescale_mirror(t2,p2,alpha,f_write=f_write,title='cv',n_full=n_full)
     t2 = gamma*t2
     if f_write is not None:
         f_write.write('\n## Test result with method_cv fold_%d\n'%fold_number)
@@ -513,7 +514,7 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     a,b,w,mu,sigma = reparametrize(a_init, mu_init, sigma_init, w_init, d)
     # Rescale using mirror estiamtor. 
     t = t_cal(x,a,b,w,mu,sigma)    
-    gamma = rescale_mirror(t,p,alpha,f_write=f_write,title='before optimization')
+    gamma = rescale_mirror(t,p,alpha,f_write=f_write,title='before optimization',n_full=n_full)
     t = gamma*t
     b,w = b+np.log(gamma),w+np.log(gamma)
     # Make a copy of adafdr-fast result
@@ -635,7 +636,8 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     sigma = (sigma * sigma_mean).data.numpy()
     # Testing.
     t = t_cal(x,a,b,w,mu,sigma)
-    gamma = rescale_mirror(t,p,alpha,f_write=f_write,title='after method_single_fold')   
+    gamma = rescale_mirror(t,p,alpha,f_write=f_write,title='after method_single_fold',
+                           n_full=n_full)   
     t *= gamma
     n_rej=np.sum(p<t)     
     if verbose: 
@@ -704,7 +706,7 @@ def t_cal(x,a,b,w,mu,sigma):
         t += np.exp(w[i])*np.exp(-np.sum((x-mu[i])**2*sigma[i],axis=1))
     return t
 
-def rescale_mirror(t,p,alpha,f_write=None,title=''):
+def rescale_mirror(t,p,alpha,f_write=None,title='',n_full=None):
     """Rescale to have the mirror estimate below level alpha
 
     Args:
@@ -717,15 +719,21 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     Returns:
         (float): the rescale factor.
     """
-    def get_FD_hat(p_, t_):
+    def get_FD_hat(p_, t_, n_full=None):
         """ mirror estimate: when the estimated values are two small,
             use the estimates from BH
         """
+        if n_full is None:
+            n_full = p_.shape[0]
         FD_hat = np.sum(p_ > 1-t_)
+        FD_hat_bh = np.mean(t_)*n_full
+        # print('FD_hat=%d, FD_hat_bh=%0.3f, ratio=%0.3f'%
+        #       (FD_hat, FD_hat_bh, FD_hat/FD_hat_bh))
         if FD_hat >= 5:
-            return FD_hat
+            return min(FD_hat, FD_hat_bh)
+            # return FD_hat
         else:
-            return min(5, np.sum(t_))
+            return min(5, FD_hat_bh)
         
     if f_write is not None:
         f_write.write('\n## rescale_mirror: %s\n'%title)    
@@ -744,7 +752,8 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     alpha_hat = np.zeros([gamma_grid.shape[0]], dtype=float)
     for i in range(gamma_grid.shape[0]):
         # alpha_hat[i] = max(1, np.sum(p>1-t*gamma_grid[i]))/max(1, np.sum(p<t*gamma_grid[i]))
-        alpha_hat[i] = get_FD_hat(p, t*gamma_grid[i])/max(1, np.sum(p<t*gamma_grid[i]))
+        alpha_hat[i] = get_FD_hat(p, t*gamma_grid[i], n_full=n_full)/\
+                                  max(1, np.sum(p<t*gamma_grid[i]))
     if np.sum(alpha_hat<alpha) > 0:
         gamma_l = np.max(gamma_grid[alpha_hat<alpha])
     else:
@@ -757,11 +766,12 @@ def rescale_mirror(t,p,alpha,f_write=None,title=''):
     # Binary search.
     gamma_m = (gamma_u+gamma_l)/2    
     # while (gamma_u-gamma_l>1e-2) or (max(1, np.sum(p>1-t*gamma_m))/max(1, np.sum(p<t*gamma_m)) > alpha):
-    while (gamma_u-gamma_l>1e-2) or (get_FD_hat(p, t*gamma_m)/max(1, np.sum(p<t*gamma_m)) > alpha):
+    while (gamma_u-gamma_l>1e-2) or (get_FD_hat(p, t*gamma_m, n_full=n_full)/\
+                                     max(1, np.sum(p<t*gamma_m)) > alpha):
         gamma_m = (gamma_l+gamma_u)/2
         D_hat = max(1, np.sum(p<t*gamma_m))
         # FD_hat = max(1, np.sum(p>1-t*gamma_m))
-        FD_hat = get_FD_hat(p, t*gamma_m)
+        FD_hat = get_FD_hat(p, t*gamma_m, n_full=n_full)
         alpha_hat = FD_hat/D_hat
         if f_write is not None:
             f_str = '# gamma_l=%0.4f, gamma_u=%0.4f, D_hat=%d, FD_hat=%0.2f, alpha_hat=%0.4f\n'%\
@@ -838,7 +848,7 @@ def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=Fal
     
     if verbose:        
         t = f_all(x,a,mu,sigma,w)
-        gamma = rescale_mirror(t,p,alpha)   
+        gamma = rescale_mirror(t,p,alpha,n_full=n_full)   
         t = t*gamma
         if f_write is not None:
             f_write.write('\n## Test result with method_init\n')        
