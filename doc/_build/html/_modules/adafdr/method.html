@@ -442,11 +442,10 @@
 <span class="sd">    :param fast_mode: If True, run adafdr_fast without optimization (recommended).</span>
 <span class="sd">    :type fast_mode: boolean</span>
 <span class="sd">    </span>
-<span class="sd">    :returns: (n_rej, t, theta): </span>
-<span class="sd">        n_rej is the number of rejected hypotheses for the two folds.</span>
-<span class="sd">        t is the n-dimensional decision threshold for each hypothesis.</span>
-<span class="sd">        theta is the learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].</span>
-<span class="sd">    :rtype: list, (n,) NumPy array, list </span>
+<span class="sd">    :returns: res, the result dictionary. </span>
+<span class="sd">        res[&#39;decision&#39;]: a (n,) boolean vector, decision for each hypothesis with value 1 meaning rejection.</span>
+<span class="sd">        res[&#39;threshold&#39;]: a (n,) float vector, threshold for each hypothesis.</span>
+<span class="sd">    :rtype: dictionary </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <span class="c1">#     &quot;&quot;&quot;Hypothesis testing with hypothesis splitting.</span>
 <span class="c1"># </span>

@@ -409,11 +409,10 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
     :param fast_mode: If True, run adafdr_fast without optimization (recommended).
     :type fast_mode: boolean
     
-    :returns: (n_rej, t, theta): 
-        n_rej is the number of rejected hypotheses for the two folds.
-        t is the n-dimensional decision threshold for each hypothesis.
-        theta is the learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].
-    :rtype: list, (n,) NumPy array, list 
+    :returns: res, the result dictionary. 
+        res['decision']: a (n,) boolean vector, decision for each hypothesis with value 1 meaning rejection.
+        res['threshold']: a (n,) float vector, threshold for each hypothesis.
+    :rtype: dictionary 
     """
 #     """Hypothesis testing with hypothesis splitting.
 # 
