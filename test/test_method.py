@@ -79,7 +79,7 @@ def test_preprocess_two_fold():
     _, x_test_new_2 = md.preprocess_two_fold(p_test,
                                              x_test_1.reshape([-1, 1]),
                                              x_test_2,
-                                             300, None)
+                                             300, None, np.ones([1], dtype=bool))
     print('x_test_2', x_test_2)
     print('x_test_new_2', x_test_new_2)
     assert x_test_new_2[0] > 0.75

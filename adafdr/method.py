@@ -13,23 +13,6 @@ import time
 
 np.set_printoptions(precision=4,suppress=True)
 
-""" 
-    preprocessing: standardize the hypothesis features 
-    
-    ----- input  -----
-    x_: np_array, n*d, the hypothesis features.
-    qt_norm: bool, if perform quantile normalization.
-    return_metainfo: bool, if return the meta information regarding the features
-    vis_dim: list, the dimensions to visualize. counting starts from 0, needed only when verbose is True
-    verbose: bool, if generate ancillary information
-    
-    ----- output -----
-    x: Processed feature stored as an n*d array. The discrete feature is reordered based on the alt/null ratio.
-    meta_info: a d*2 array. The first dimensional corresponds to the type of the feature (continuous/discrete). The second 
-               dimension is a list on the mapping (from small to large). For example, if the before reorder is [0.1,0.2,0.7].
-               This list may be [0.7,0.1,0.2].
-""" 
-
 def feature_preprocess(x, qt_norm=True, continous_rank=True):
     """Feature preprocessing: 1. quantile normalization, 
         2. make the range [0,1] for each feature
@@ -53,11 +36,10 @@ def feature_preprocess(x, qt_norm=True, continous_rank=True):
 
 def get_feature_type(x):
     """ Tell if a feature is continuous or discrete.
+    Categorial: True 
+    Numerical/Ordinal: False
     """
-    if np.unique(x).shape[0]<75:
-        return 'discrete'
-    else: 
-        return 'continuous'
+    return np.unique(x).shape[0]<75
 
 def get_order_discrete(p, x, x_val, n_full=None):
     """ Calculate the order of the discrete features according to the alt/null ratio
@@ -104,29 +86,44 @@ def reorder_discrete(x, x_val, x_order):
         x_new[x == x_val[x_order[i]]] = x_val[i]
     return x_new
 
-def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
-                           cate_name={}, output_folder=None,\
-                           title_list=None, h=None, figsize=[5,3]):
-    """Provide a visualization of pi1/pi0 for each dimension,
-    to visualize the amount of information carried in each dimension.
+def adafdr_explore(p_input, x_input, alpha=0.1, n_full=None, vis_dim=None,\
+                   covariate_type=None, cate_name={}, output_folder=None,\
+                   title_list=None, h=None, figsize=[5,3]):
     
-        Args:
-        p ((n,) ndarray): the p-values.
-        x_input ((n,d) ndarray): The covaraites. The discrete features should be coded by
-            integers starting from 0.
-        alpha (float): The nominal FDR level.
-        n_full (int): Total number of hypotheses before filtering.
-        vis_dim (list or ndarray): the dimensions to visualize
-        cate_name (dic of dics): the names of discrete categories for each dimension.
-            None when the category names are not available. An example is as follows:
-            cate_name = {1: {0: 'name0', 1: 'name1'}}. Here, dimension 0 has
-            no names. Dimension 1 is discrete and has two values 0,1, whose corresponding
-            names are name0, name1
-        output_folder (string): The output directory.
-        title_list (list of strings): Titles for each figure. 
-        h ((n,) ndarray): The ground truth (None if not available). 
+    """ Covariate exploration.
     
-        Returns:
+    For each covariate, provide a visualization of its relationship with the p-value,
+    as well as an estimate of the alternative and the null proportion.
+
+    :param p_input: p-value.
+    :type p_input: NumPy array, shape (n,)
+    :param x_input: Covaraites. The ordinal/categorical features should be coded by 
+        integers starting from 0.
+    :type x_input: NumPy array, shape (n,d) 
+    :param alpha: Nominal FDR level.
+    :type alpha: float
+    :param n_full: Total number of hypotheses before p-vlaue filtering.
+    :type n_full: int 
+    :param covariate_type: Type of each covariate. False/0 means numerical/ordinal 
+        while True/1 means categorical. This is optional. 
+        If not given, covaraites with less than 75 distinct values are treated as categorical.
+        Otherwise is treated as numerical/ordinal.
+    :type covariate_type: 0/1 list or boolean NumPy array, shape (d,) 
+    :param vis_dim: The dimensions to visualize
+    :type vis_dim: list or int NumPy array
+    :param cate_name: the category names for each categorical covariate.
+            The value is None when the category names are not available. 
+            An example is as follows:
+            cate_name = {1: {0: 'name0', 1: 'name1'}}. Here, covariate 0 has
+            no names. Dimension 1 is categorical and has two values 0,1, 
+            whose corresponding names are name0, name1
+    :type cate_name: dictionary of dictionaries
+    :param output_folder: Output directory.
+    :type output_folder: str
+    :param title_list: Titles for each figure. 
+    :type title_list: list of strings
+    :param h: Ground truth. 1 mean alternative while 0 means null (None if not available). 
+    :type h: boolean NumPy array, shape (n,)
     """
     def plot_feature_1d(x_margin, p, x_null, x_alt, meta_info,\
                         title='',cate_name=None, output_folder=None,\
@@ -140,8 +137,8 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
         bins = np.linspace(x_min,x_max, 51)
         bin_width = bins[1]-bins[0]
         # Ploting for the continuous case and the discrete case.
-        if feature_type == 'continuous':         
-            # Continuous: use kde to estimate the probability.
+        if ~feature_type: # continuous/ordinal feature
+            # Numerical or ordinal: use kde to estimate the probability.
             n_bin = bins.shape[0]-1
             x_grid = (bins+bin_width/2)[0:-1]
             p_null,_ = np.histogram(x_null, bins=bins) 
@@ -154,10 +151,9 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
             kde_alt = stats.gaussian_kde(x_alt).evaluate(x_grid)
             psuedo_density = np.min(kde_null[kde_null>0])/10
             psuedo_density = psuedo_density.clip(min=1e-20)
-            p_ratio = (kde_alt+psuedo_density)/(kde_null+psuedo_density)
-            
+            p_ratio = (kde_alt+psuedo_density)/(kde_null+psuedo_density)            
         else: 
-            # Discrete: use the empirical counts.
+            # Categorical: use the empirical counts.
             unique_null,cts_null = np.unique(x_null, return_counts=True)
             unique_alt,cts_alt = np.unique(x_alt, return_counts=True)            
             unique_val = np.array(list(set(list(unique_null)+list(unique_alt))))
@@ -181,7 +177,7 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
                     cate_name_.append(cate_name[x_val_[i]])
         # Generate the figure.
         rnd_idx=np.random.permutation(p.shape[0])[0:np.min([10000, p.shape[0]])]
-        if feature_type == 'continuous':
+        if ~feature_type: # numerical/ordinal feature
             pts_jitter = 0*(np.random.rand(np.min([10000, p.shape[0]]))-0.5)
         else:
             pts_jitter = 0.75*(np.random.rand(np.min([10000, p.shape[0]]))-0.5)
@@ -203,7 +199,7 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
         plt.ylim([0, min((p[p<0.5].max()), 0.05)])
         plt.ylabel('p-value', fontsize=14)
         plt.xlabel('covariate $x$', fontsize=14)
-        if feature_type == 'discrete':
+        if feature_type: # categorial feature
             plt.xticks(x_val_, cate_name_, rotation=90, fontsize=12)
         plt.tight_layout()
         if output_folder is not None:
@@ -216,22 +212,12 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
         plt.bar(x_grid, p_null, width=bin_width, color='steelblue', alpha=0.6, label='null')
         plt.bar(x_grid, p_alt, width=bin_width, color='orange', alpha=0.6, label='alt')
         plt.xlim([x_min, x_max])
-        if feature_type=='discrete': 
+        if feature_type: # categorial feature
             plt.xticks(x_grid, cate_name_, rotation=90, fontsize=12)
         elif x_max>1e4:
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ylabel('null/alt proportion', fontsize=14)
         plt.legend(fontsize=12)
-        # plt.subplot(313)
-        # if feature_type == 'continuous':
-        #     plt.plot(x_grid, p_ratio, color='seagreen', label='ratio', linewidth=4) 
-        # else:
-        #     plt.plot(x_grid, p_ratio, color='seagreen', marker='o', label='ratio', linewidth=4)
-        #     plt.xticks(x_grid, cate_name_, rotation=45)
-        # plt.xlim([x_min, x_max])
-        # y_min,y_max = plt.ylim()
-        # plt.ylim([0, y_max])
-        # plt.ylabel('ratio')
         plt.xlabel('covariate $x$', fontsize=14)
         plt.tight_layout()
         if output_folder is not None:
@@ -243,16 +229,23 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
     # Start of the main function. Make a copy of the data.
     np.random.seed(0)
     x = x_input.copy()
+    p = p_input.copy()
     if n_full is None: 
         n_full = p.shape[0]
     if len(x.shape) == 1: 
         x = x.reshape([-1, 1])
-    _,d = x.shape   
+    _,d = x.shape
+    if covariate_type is None:
+        covariate_type = np.zeros([d], dtype=bool)
+        for i in range(d):
+            covariate_type[i] = get_feature_type(x[:, i])
+    else:
+        covariate_type = np.array(covariate_type, dtype=bool)
     # Reorder the discrete features.
     meta_info = []        
     for i in range(d):
-        feature_type = get_feature_type(x[:, i])
-        if feature_type == 'discrete':
+        feature_type = covariate_type[i]
+        if feature_type: # categorial feature
             x_val = np.sort(np.unique(x[:, i]))
             x_order = get_order_discrete(p, x[:, i], x_val, n_full=n_full)
             x[:, i] = reorder_discrete(x[:, i], x_val, x_order)
@@ -281,7 +274,7 @@ def adafdr_explore(p, x_input, alpha=0.1, n_full=None, vis_dim=None,\
                         cate_name=temp_cate_name, output_folder=output_folder,\
                         h=h, figsize=figsize)            
 
-def preprocess_two_fold(p1, x1, x2, n_full, f_write):
+def preprocess_two_fold(p1, x1, x2, n_full, f_write, covariate_type):
     """Data preprocessing two folds of data. Note that to prevent overfitting,
     the preprocessing procedure does not depend on the p-values from the second fold.
     
@@ -290,7 +283,10 @@ def preprocess_two_fold(p1, x1, x2, n_full, f_write):
         x1 ((n1,d) ndarray): the covariates from the first fold.
         x2 ((n1,d) ndarray): the covariates from the second fold.
         n_full (int): Total number of hypotheses before filtering.
-    
+        f_write (file handle): file handle for recording the results
+        covariate_type (0/1 list or bool array): the type of each covariate. 
+            False: numerical/ordinal
+            True: categorical.
     Returns:
         x1 ((n1,d) ndarray): the preprocessed covariates from the first fold.
         x2 ((n1,d) ndarray): the preprocessed covariates from the second fold.
@@ -306,8 +302,10 @@ def preprocess_two_fold(p1, x1, x2, n_full, f_write):
     # Rearrange the discrete features.
     for i in range(d):
         temp_x = np.concatenate([x1[:, i], x2[:, i]])
-        feature_type = get_feature_type(temp_x)
-        if feature_type == 'discrete':
+        # feature_type = get_feature_type(temp_x)
+        feature_type = covariate_type[i]
+        # if feature_type == 'discrete':
+        if feature_type: # categorical
             x_val = np.sort(np.unique(temp_x))           
             x_order = get_order_discrete(p1, x1[:, i], x_val, n_full=n_full)
             x1_new[:, i] = reorder_discrete(x1[:, i], x_val, x_order)
@@ -341,7 +339,7 @@ def method_single_fold_wrapper(data):
     # Load the data.
     p1,x1 = data[0]
     p2,x2 = data[1]
-    K, alpha, n_full,n_itr, output_folder, random_state, verbose, fast_mode = data[2]
+    K, alpha, n_full,n_itr, output_folder, random_state, verbose, fast_mode, covariate_type = data[2]
     fold_number = data[3]
     # Start a write file.
     if output_folder is not None:
@@ -354,7 +352,7 @@ def method_single_fold_wrapper(data):
         f_write = None
     np.random.seed(random_state+fold_number)
     # Preprocess the data.
-    x1, x2 = preprocess_two_fold(p1, x1, x2, n_full, f_write)
+    x1, x2 = preprocess_two_fold(p1, x1, x2, n_full, f_write, covariate_type)
     # Learn the threshold
     _,_,theta = method_single_fold(p1, x1, K=K, alpha=alpha, n_full=n_full, n_itr=n_itr,\
                                    verbose=verbose, output_folder=output_folder,\
@@ -372,31 +370,76 @@ def method_single_fold_wrapper(data):
     return np.sum(p2<t2), t2, [a,b,w,mu,sigma,gamma]
 
 def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_norm=True,\
-                h=None, verbose=False, output_folder=None, random_state=0,\
+                covariate_type=None, h=None, verbose=False, output_folder=None, random_state=0,\
                 single_core=True, fast_mode=True):
-    """Hypothesis testing with hypothesis splitting.
+    """ Covariate-adaptive multiple testing.
+    
+    Main function for covariate-adaptive multiple testing.
 
-    Args:
-        p_input ((n,) ndarray): The p-values.
-        x_input ((n,d) ndarray): The covaraites. The discrete features should be coded by integers
-            starting from 0.
-        K (int): The number of bump components.
-        alpha (float): The nominal FDR level.
-        n_full (int): Total number of hypotheses before filtering.
-        n_itr (int): The number of iterations for the optimization process.
-        qt_norm (bool): If perform quantile normalization.
-        h ((n,) ndarray): The ground truth (None if not available).        
-        verbose (bool): Indicate if output the computation details.
-        output_folder (string): The output directory.
-        random_state (int): The random seed.
-        single_core (bool): True: use single core. False: process two processes in parallel.
-        fast_mode (bool): If True, go without optimization.
-        
-    Returns:
-        n_rej (list): Number of rejected hypothesesfor the two folds.
-        t ((n,) ndarray): The decision threshold.
-        theta (list): Learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].
+    :param p_input: p-value.
+    :type p_input: NumPy array, shape (n,)
+    :param x_input: Covaraites. The ordinal/categorical features should be coded by 
+        integers starting from 0.
+    :type x_input: NumPy array, shape (n,d)
+    :param K: Number of mixture components.
+    :type K: int
+    :param alpha: Nominal FDR level.
+    :type alpha: float
+    :param n_full: Total number of hypotheses before p-vlaue filtering.
+    :type n_full: int
+    :param n_itr: number of iterations for optimization.
+    :type n_itr: int
+    :param qt_norm: If perform quantile normalization.
+    :type qt_norm: boolean
+    :param covariate_type: Type of each covariate. False/0 means numerical/ordinal 
+        while True/1 means categorical. This is optional. 
+        If not given, covaraites with less than 75 distinct values are treated as categorical.
+        Otherwise is treated as numerical/ordinal.
+    :type covariate_type: 0/1 list or boolean NumPy array, shape (d,)
+    :param h: Ground truth. 1 means alternative while 0 means null (None if not available). 
+    :type h: boolean NumPy array, shape (n,)
+    :param verbose: Indicate if output the computation details.
+    :type verbose: boolean
+    :param output_folder: Output directory.
+    :type output_folder: str
+    :param random_state: Random seed.
+    :type random_state: int
+    :param single_core: True if use single core and False for two cores in parallel.
+    :type single_core: boolean
+    :param fast_mode: If True, run adafdr_fast without optimization (recommended).
+    :type fast_mode: boolean
+    
+    :returns: (n_rej, t, theta): 
+        n_rej is the number of rejected hypotheses for the two folds.
+        t is the n-dimensional decision threshold for each hypothesis.
+        theta is the learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].
+    :rtype: list, (n,) NumPy array, list 
     """
+#     """Hypothesis testing with hypothesis splitting.
+# 
+#     Args:
+#         p_input ((n,) ndarray): The p-values.
+#         x_input ((n,d) ndarray): The covaraites. The discrete features should be coded by integers
+#             starting from 0.
+#         K (int): The number of bump components.
+#         alpha (float): The nominal FDR level.
+#         n_full (int): Total number of hypotheses before filtering.
+#         n_itr (int): The number of iterations for the optimization process.
+#         qt_norm (bool): If perform quantile normalization.
+#         covariate_type (bool array): True: categorical feature. False: numerical or ordinal feature 
+#             (no reordering) 
+#         h ((n,) ndarray): The ground truth (None if not available).        
+#         verbose (bool): Indicate if output the computation details.
+#         output_folder (string): The output directory.
+#         random_state (int): The random seed.
+#         single_core (bool): True: use single core. False: process two processes in parallel.
+#         fast_mode (bool): If True, go without optimization.
+#         
+#     Returns:
+#         n_rej (list): Number of rejected hypothesesfor the two folds.
+#         t ((n,) ndarray): The decision threshold.
+#         theta (list): Learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].
+#     """
     np.random.seed(random_state)    
     p = np.copy(p_input)
     x = np.copy(x_input)
@@ -409,13 +452,20 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
         x = x.reshape([-1,1])
     n_sample,d = x.shape
     n_sub = int(n_sample/2)
+    if covariate_type is None:
+        covariate_type = np.zeros([d], dtype=bool)
+        for i in range(d):
+            covariate_type[i] = get_feature_type(x[:, i])
+    else:
+        covariate_type = np.array(covariate_type, dtype=bool)
     # Randomly split the hypotheses into two folds.    
     rand_idx = np.random.permutation(n_sample)    
     fold_idx = np.zeros([n_sample],dtype=int)
     fold_idx[rand_idx[0:n_sub]] = 0
     fold_idx[rand_idx[n_sub:]] = 1
     # Construct the input data.
-    args = [K, alpha, int(n_full/2), n_itr, output_folder, random_state, verbose, fast_mode]
+    args = [K, alpha, int(n_full/2), n_itr, output_folder, random_state,
+            verbose, fast_mode, covariate_type]
     data_fold_1 = [p[fold_idx==0], x[fold_idx==0]]
     data_fold_2 = [p[fold_idx==1], x[fold_idx==1]]
     Y_input = []
