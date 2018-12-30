@@ -6,7 +6,7 @@ A fast and covariate-adaptive method for multiple hypothesis testing.
 Software accompanying the paper "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing", 2018.
 
 ## Requirement
-* AdaFDR runs on python 3.
+* AdaFDR runs on python 3.6
 
 ## Installation
 ```
@@ -37,16 +37,18 @@ or (N,1) numpy.ndarray.
 ### Covariate visualization
 The covariate visualization method `adafdr_explore` can be used as 
 ```python
-adafdr.method.adafdr_explore(p, x, output_folder=None)
+adafdr.method.adafdr_explore(p, x, output_folder=None, covariate_type=None)
 ```
-If the `output_folder` is not `None`, the covariate visualization figures will be 
-saved in `output_folder`. Otherwise, they will show up in the console.
+* If the `output_folder` is not `None`, the covariate visualization figures will be 
+saved in `output_folder`. Otherwise, they will show up in the console. 
+* `covariate_type` specifies the type of each covariate: 0 means numerical/ordinal while 1 means categorical. For example, `covariate_type=[0,1]` means there are 2 covariates, the first is numerical/ordinal and the second is categorical. If not specified, a covariate with more than 75 distinct values is regarded as numerical/ordinal and otherwise categorical.
+* See also [doc](https://htmlpreview.github.io/?https://raw.githubusercontent.com/martinjzhang/adafdr/master/doc/_build/html/api.html) for more details.
 
 ### Multiple testing
 The multiple hypothesis testing method `adafdr_test` can be used as 
-* fast version (default): `res = adafdr.method.adafdr_test(p, x, alpha=0.1)`
-* regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False)`
-* regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False)`
+* fast version (default): `res = adafdr.method.adafdr_test(p, x, alpha=0.1, covariate_type=None)`
+* regular version: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, covariate_type=None)`
+* regular version with multi-core: `res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=False, covariate_type=None)`
 
 `res` is a dictionary containing the results, including:
 * `res['decision']`: a (N,) boolean vector, decision for each hypothesis with value 1 meaning rejection.
@@ -54,6 +56,10 @@ The multiple hypothesis testing method `adafdr_test` can be used as
 * `res['threshold']`: a (N,) float vector, threshold for each hypothesis.
 <!--* `res['theta']`: a list of learned parameters. -->
 If `output_folder` is a folder path, log files will be saved in the folder. 
+
+`covariate_type` specifies the type of each covariate: 0 means numerical/ordinal while 1 means categorical. For example, `covariate_type=[0,1]` means there are 2 covariates, the first is numerical/ordinal and the second is categorical. If not specified, a covariate with more than 75 distinct values is regarded as numerical/ordinal and otherwise categorical.
+
+See also [doc](https://htmlpreview.github.io/?https://raw.githubusercontent.com/martinjzhang/adafdr/master/doc/_build/html/api.html) for more details.
 
 ## Example on airway RNA-seq data
 The following is an example on the airway RNA-seq data
