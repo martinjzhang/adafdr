@@ -14,8 +14,9 @@ import time
 np.set_printoptions(precision=4,suppress=True)
 
 def feature_preprocess(x, qt_norm=True, continous_rank=True):
-    """Feature preprocessing: 1. quantile normalization, 
-        2. make the range [0,1] for each feature
+    """Feature preprocessing: 
+        1. quantile normalization, 
+        2. make the range to be [0,1] for each feature
 
     Args:
         x ((n,d) ndarray): The covaraites.
