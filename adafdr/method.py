@@ -362,17 +362,25 @@ def method_single_fold_wrapper(data):
     a,b,w,mu,sigma,gamma = theta
     # Test on the second fold
     t2 = t_cal(x2,a,b,w,mu,sigma)
+    # Same value for hypothesis with the same covariate
+    _, inv_map = np.unique(data[1][1],axis=0,return_inverse=True)
+    val_list, ct = np.unique(inv_map, return_counts=True)
+    for val in val_list[ct>1]:
+        temp_ind = (inv_map==val)
+        t2[temp_ind] = np.mean(t2[temp_ind])
     gamma = rescale_mirror(t2,p2,alpha,f_write=f_write,title='cv',n_full=n_full)
     t2 = gamma*t2
     if f_write is not None:
         f_write.write('\n## Test result with method_cv fold_%d\n'%fold_number)
         result_summary(p2<t2, f_write=f_write, title='method_single_fold_wrapper_%d'%fold_number)
         f_write.close()
-    return np.sum(p2<t2), t2, [a,b,w,mu,sigma,gamma]
+    return t2
+    # return np.sum(p2<t2), t2, [a,b,w,mu,sigma,gamma]
 
-def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_norm=True,\
-                covariate_type=None, h=None, verbose=False, output_folder=None, random_state=0,\
-                single_core=True, fast_mode=True):
+### Fixit: change it to adafdr_fit?
+def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_norm=True,
+               covariate_type=None, h=None, verbose=False, output_folder=None, random_state=0,
+               single_core=True, fast_mode=True):
     """ Covariate-adaptive multiple testing.
     
     Main function for covariate-adaptive multiple testing.
@@ -481,40 +489,59 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
         res = po.map(method_single_fold_wrapper, Y_input)
         po.close()
     # Summarize the result.
-    n_rej = [res[0][0], res[1][0]]
     t = np.zeros([n_sample], dtype=float)
-    t[fold_idx==0] = res[0][1]
-    t[fold_idx==1] = res[1][1]
-    theta = [res[0][2], res[1][2]]    
-    if verbose:
-        print('# total rejection: %d'%np.array(n_rej).sum(), n_rej)
-        if h is not None:          
-            print('# D=%d, FD=%d, FDP=%0.3f'\
-                  %(np.sum(p<t), np.sum((p<t)*(h==0)),\
-                    np.sum((p<t)*(h==0))/np.sum(p<t)))        
-        # Visualize the learned threshold.
-        if output_folder is not None:
-            color_list = ['steelblue', 'orange']            
-            n_figure = min(d,5)
-            plt.figure(figsize=[8, 4+n_figure])
-            for i_dim in range(n_figure):
-                plt.subplot(str(n_figure)+'1'+str(i_dim+1))
-                for i in range(2):
-                    if h is not None:
-                        plot_scatter_t(t[fold_idx==i], p[fold_idx==i], x[fold_idx==i, i_dim],\
-                                       h[fold_idx==i], color=color_list[i], label='fold %d'%(i+1))
-                    else:
-                        plot_scatter_t(t[fold_idx==i], p[fold_idx==i], x[fold_idx==i, i_dim],\
-                                       color=color_list[i], label='fold %d'%(i+1))
-                plt.legend()
-                plt.xlabel('x_%d'%(i_dim+1))
-                plt.ylabel('p-value')
-            plt.savefig(output_folder+'/learned_threshold.png')
-            plt.close()
-        print('#time total: %0.4fs'%(time.time()-start_time))
-    res_adafdr = {'n_rej':n_rej, 'decision':p_input<=t, 'threshold':t, 'theta':theta}
-    return res_adafdr
-    # return (p_input<=t), t, theta
+    t[fold_idx==0] = res[0]
+    t[fold_idx==1] = res[1]
+    decision = (p_input <= t)
+    n_rej = np.zeros(2, dtype=int)
+    n_rej[0] = np.sum(decision[fold_idx==0])
+    n_rej[1] = np.sum(decision[fold_idx==1])
+    print('## total rejection: %d\n'%np.sum(p<=t))
+    res = {'threshold':t, 'fold_idx':fold_idx, 'p_value':p_input,
+           'decision':decision, 'n_rej':n_rej}
+    return res
+
+def adafdr_retest(res_adafdr, alpha=0.1, n_full=None, output_folder=None):
+    """Generate the result with a different nominal FDR value
+
+    Args:
+        res_adafdr (dic): The adafdr result dictionary.
+        alpha (float): The nominal FDR level.
+        n_full (int): Total number of hypotheses before filtering.
+        output_folder (string): The output directory.
+        
+    Returns:
+        res_new (dic): The updated adafdr result dictionary.
+    """
+    if output_folder is not None:
+        fname = output_folder+'/test_alpha_%0.2f.txt'%alpha
+        f_write = open(fname,'w+')
+    else:
+        f_write = None        
+    n_sample = res_adafdr['fold_idx'].shape[0]
+    threshold = np.zeros(n_sample, dtype=float)
+    decision = np.zeros(n_sample, dtype=bool)
+    n_rej = np.zeros(2, dtype=int) 
+    for i_fold in [0,1]:        
+        temp_ind = (res_adafdr['fold_idx']==i_fold)
+        temp_t = res_adafdr['threshold'][temp_ind]
+        temp_p = res_adafdr['p_value'][temp_ind]
+        if n_full is None:
+            n_sub = temp_p.shape[0]
+        else: 
+            n_sub = int(n_full / n_sample * temp_p.shape[0])
+        gamma = rescale_mirror(temp_t, temp_p, alpha, 
+                               f_write=f_write, title='rescale fold %d'%i_fold,
+                               n_full=n_sub)
+        temp_t = temp_t*gamma
+        threshold[temp_ind] = temp_t
+        decision[temp_ind] = (temp_p<=temp_t)
+        n_rej[i_fold] = np.sum(decision[temp_ind])       
+    if output_folder is not None:
+        f_write.close()
+    res_new = {'threshold':threshold, 'decision':decision, 'n_rej':n_rej,
+               'fold_idx':res_adafdr['fold_idx'], 'p_value':res_adafdr['p_value']}
+    return res_new
 
 def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
                        n_itr=1500, h=None, verbose=False,\
@@ -571,10 +598,12 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     res_fast = (np.sum(p < t), t.copy(), [a,b,w,mu,sigma,gamma])
     # Return the result without optimization.
     if fast_mode or (np.sum(p<t)<100) or (np.sum(p>1-t)<20):
-        if f_write is not None:
-            temp_str = 'Too few discoveries for optimization: ' +\
+        temp_str = 'Too few discoveries for optimization: ' +\
                        'D=%d, FD_hat=%d, '%(np.sum(p<t), np.sum(p>1-t)) +\
                        'Exit with fast mode result.\n'
+        if verbose:
+            print(temp_str)
+        if f_write is not None:            
             f_write.write(temp_str)
         return res_fast
     # Setting parameters for the optimization.
@@ -780,10 +809,17 @@ def rescale_mirror(t,p,alpha,f_write=None,title='',n_full=None):
         # print('FD_hat=%d, FD_hat_bh=%0.3f, ratio=%0.3f'%
         #       (FD_hat, FD_hat_bh, FD_hat/FD_hat_bh))
         if FD_hat >= 5:
-            return min(FD_hat, FD_hat_bh)
+            # return min(FD_hat, FD_hat_bh)
+            # Check if the p-value distribution is abnormal
+            if FD_hat>1.2*FD_hat_bh:
+                return FD_hat_bh
+            else:
+                return FD_hat
             # return FD_hat
         else:
+            # Use FD_hat_bh when the number of discoveries is very few
             return min(5, FD_hat_bh)
+            # return max(FD_hat, FD_hat_bh)
         
     if f_write is not None:
         f_write.write('\n## rescale_mirror: %s\n'%title)    
@@ -894,8 +930,7 @@ def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=Fal
     a,mu,sigma,w = mixture_fit(x_alt,K,x_w=x_w,verbose=verbose,\
                                random_state=random_state,f_write=f_write,\
                                output_folder=output_folder,\
-                               suffix='_alt',fold_number=fold_number)    
-    
+                               suffix='_alt',fold_number=fold_number)        
     if verbose:        
         t = f_all(x,a,mu,sigma,w)
         gamma = rescale_mirror(t,p,alpha,n_full=n_full)   
@@ -1282,6 +1317,45 @@ def sbh_test(p,alpha=0.1,lamb=0.5,n_full=None,verbose=False):
 """
     some old code
 """ 
+
+
+
+    # # Summarize the result.
+    # n_rej = [res[0][0], res[1][0]]
+    # t = np.zeros([n_sample], dtype=float)
+    # t[fold_idx==0] = res[0][0]
+    # t[fold_idx==1] = res[1][0]
+    # theta = [res[0][2], res[1][2]]    
+    # if verbose:
+    #     print('# total rejection: %d'%np.array(n_rej).sum(), n_rej)
+    #     if h is not None:          
+    #         print('# D=%d, FD=%d, FDP=%0.3f'\
+    #               %(np.sum(p<t), np.sum((p<t)*(h==0)),\
+    #                 np.sum((p<t)*(h==0))/np.sum(p<t)))        
+    #     # Visualize the learned threshold.
+    #     if output_folder is not None:
+    #         color_list = ['steelblue', 'orange']            
+    #         n_figure = min(d,5)
+    #         plt.figure(figsize=[8, 4+n_figure])
+    #         for i_dim in range(n_figure):
+    #             plt.subplot(str(n_figure)+'1'+str(i_dim+1))
+    #             for i in range(2):
+    #                 if h is not None:
+    #                     plot_scatter_t(t[fold_idx==i], p[fold_idx==i], x[fold_idx==i, i_dim],\
+    #                                    h[fold_idx==i], color=color_list[i], label='fold %d'%(i+1))
+    #                 else:
+    #                     plot_scatter_t(t[fold_idx==i], p[fold_idx==i], x[fold_idx==i, i_dim],\
+    #                                    color=color_list[i], label='fold %d'%(i+1))
+    #             plt.legend()
+    #             plt.xlabel('x_%d'%(i_dim+1))
+    #             plt.ylabel('p-value')
+    #         plt.savefig(output_folder+'/learned_threshold.png')
+    #         plt.close()
+    #     print('#time total: %0.4fs'%(time.time()-start_time))
+    # res_adafdr = {'n_rej':n_rej, 'decision':p_input<=t, 'threshold':t, 'theta':theta,
+    #               'fold_idx':fold_idx, 'p_value':p_input}
+    # res_adafdr = {'threshold':t, 'fold_idx':fold_idx, 'p_value':p_input}
+    # return res_adafdr
 
 
 ## old code for feature_explore

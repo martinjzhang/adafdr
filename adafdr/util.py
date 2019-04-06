@@ -211,7 +211,7 @@ def inv_sigmoid(w):
 """
     Functions for generating the simulation results
 """
-def get_summary_stats(filename=None, folder_r=None):
+def get_summary_stats(filename=None, folder_r=None, folder_r_bl=None):
     """Extract the statstics from the simulation results
     
     Args:
@@ -265,16 +265,41 @@ def get_summary_stats(filename=None, folder_r=None):
                         np.sum((h==0)*(h_hat==1)) / max(np.sum(h_hat==1), 1)
                     summary_stats[method]['Power'][i_data, i_alpha] =\
                         np.sum((h==1)*(h_hat==1)) / np.sum(h==1)
+    if folder_r_bl is not None:
+        file_list = []
+        for filename in os.listdir(folder_r_bl):
+            if filename[0:3] == 'res':
+                file_list.append(filename)
+        method_r_list = ['adapt', 'ihw']
+        method = 'bl'
+        summary_stats[method] = {}
+        summary_stats[method]['FDP'] = np.zeros([n_data, len(alpha_list)])
+        summary_stats[method]['Power'] = np.zeros([n_data, len(alpha_list)])
+        for i_data,filename in enumerate(file_list):
+            file_path = folder_r_bl + '/' + filename
+            temp_data = np.loadtxt(file_path, skiprows=1, delimiter = ',')
+            h = temp_data[:, 0]
+            p_adj_bl = temp_data[:, 1]
+            p_adj_bh = temp_data[:, 2]
+            for i_alpha,alpha in enumerate(alpha_list):   
+                h_hat = (p_adj_bl<=alpha)
+                summary_stats[method]['FDP'][i_data, i_alpha] =\
+                    np.sum((h==0)*(h_hat==1)) / max(np.sum(h_hat==1), 1)
+                summary_stats[method]['Power'][i_data, i_alpha] =\
+                    np.sum((h==1)*(h_hat==1)) / np.sum(h==1)
     return summary_stats, time_dic
 
 def plot_size_power(summary_stats, method_mapping_dic, data_name='', output_folder=None):
-    marker_list = ['o', 'v', '^', '*', 'h', 'd']
-    # color_list = ['C8', 'C5', 'C1', 'C2', 'C3', 'C0']
-    color_list = ['C1', 'C2', 'C3', 'C0', 'C5', 'C8']
+    marker_list = ['o', 'v', 'p', '^', '*', 'h', 'd']
+    color_list = ['C1', 'C2', 'C4', 'C3', 'C0', 'C5', 'C8']
+    method_list = ['nfdr (fast)', 'nfdr', 'bl', 'adapt', 'ihw', 'sbh', 'bh']
     alpha_list = [0.05, 0.1, 0.15, 0.2]
-    axes = plt.figure(figsize = [5, 4])
-    method_list = list(summary_stats.keys())
-    method_list = ['nfdr (fast)', 'nfdr', 'adapt', 'ihw', 'sbh', 'bh']
+    axes = plt.figure(figsize = [6, 5])
+    # method_list = list(summary_stats.keys())
+    # method_list = ['nfdr (fast)', 'nfdr', 'bl', 'sbh', 'bh']
+#     method_list = ['nfdr (fast)', 'nfdr', 'bl', 'adapt', 'ihw', 'sbh', 'bh']
+    # method_list = ['nfdr (fast)', 'bl', 'adapt', 'ihw', 'sbh', 'bh']
+    # method_list = ['nfdr (fast)', 'nfdr', 'bl', 'adapt', 'ihw', 'sbh', 'bh']
     n_data = summary_stats[method_list[0]]['FDP'].shape[0]
     for i_method,method in enumerate(method_list):
         y_val = np.mean(summary_stats[method]['FDP'], axis=0)
@@ -297,7 +322,7 @@ def plot_size_power(summary_stats, method_mapping_dic, data_name='', output_fold
         plt.savefig(output_folder+'fdp_%s.pdf'%data_name)
     else:
         plt.show()
-    axes = plt.figure(figsize = [5, 4])
+    axes = plt.figure(figsize = [6, 5])
     for i_method,method in enumerate(method_list):
         y_val = np.mean(summary_stats[method]['Power'], axis=0)
         y_err = np.std(summary_stats[method]['Power'], axis=0) / np.sqrt(n_data) * 1.96
@@ -305,7 +330,7 @@ def plot_size_power(summary_stats, method_mapping_dic, data_name='', output_fold
                      capsize=4, elinewidth = 1.5, linewidth=1.5,\
                      color = color_list[i_method], marker = marker_list[i_method],\
                      markersize = 6, alpha=0.8)
-    plt.legend(loc=2, fontsize=12)
+    plt.legend(loc=2, fontsize=14)
     plt.ylabel('power', fontsize=16)
     plt.xlabel('nominal FDR', fontsize=16)
     if output_folder is not None:
@@ -315,3 +340,112 @@ def plot_size_power(summary_stats, method_mapping_dic, data_name='', output_fold
     else:
         plt.show()
     plt.close('all')
+
+
+# """
+#     Functions for generating the simulation results
+# """
+# def get_summary_stats(filename=None, folder_r=None):
+#     """Extract the statstics from the simulation results
+#     
+#     Args:
+#         filename (str): file path for the python results.
+#         folder_r (str): result for r methods.
+#     Return:
+#         summary_stats (dic): a dic containing FDP and Power.
+#     """
+#     summary_stats = {}
+#     # Python methods
+#     if filename is not None:
+#         fil = open(filename, 'rb')
+#         result_dic = pickle.load(fil)
+#         time_dic = pickle.load(fil)
+#         method_list = list(result_dic.keys())
+#         alpha_list = np.array([0.05, 0.1, 0.15, 0.2])
+#         n_data = len(result_dic[method_list[0]][alpha_list[0]])
+#         for method in method_list:
+#             summary_stats[method] = {}
+#             summary_stats[method]['FDP'] = np.zeros([n_data, len(alpha_list)])
+#             summary_stats[method]['Power'] = np.zeros([n_data, len(alpha_list)])
+#             for i_alpha,alpha in enumerate(alpha_list):
+#                 for i_data,data in enumerate(result_dic[method][alpha]):
+#                     h, h_hat = data
+#                     summary_stats[method]['FDP'][i_data, i_alpha] =\
+#                         np.sum((h==0)*(h_hat==1)) / max(np.sum(h_hat==1), 1)
+#                     summary_stats[method]['Power'][i_data, i_alpha] =\
+#                         np.sum((h==1)*(h_hat==1)) / np.sum(h==1)
+#     # R methods
+#     if folder_r is not None:
+#         # file_list = os.listdir(folder_r)
+#         file_list = []
+#         for filename in os.listdir(folder_r):
+#             if filename[0:3] == 'res':
+#                 file_list.append(filename)
+#         method_r_list = ['adapt', 'ihw']
+#         for method in method_r_list:
+#             summary_stats[method] = {}
+#             summary_stats[method]['FDP'] = np.zeros([n_data, len(alpha_list)])
+#             summary_stats[method]['Power'] = np.zeros([n_data, len(alpha_list)])
+#             for i_data,filename in enumerate(file_list):
+#                 file_path = folder_r + '/' + filename
+#                 temp_data = np.loadtxt(file_path, skiprows=1, delimiter = ',')
+#                 h = temp_data[:, 0]
+#                 for i_alpha,alpha in enumerate(alpha_list):                                                
+#                     if method == 'adapt':
+#                         h_hat = temp_data[:, i_alpha+1]
+#                     else:
+#                         h_hat = temp_data[:, i_alpha+5]
+#                     summary_stats[method]['FDP'][i_data, i_alpha] =\
+#                         np.sum((h==0)*(h_hat==1)) / max(np.sum(h_hat==1), 1)
+#                     summary_stats[method]['Power'][i_data, i_alpha] =\
+#                         np.sum((h==1)*(h_hat==1)) / np.sum(h==1)
+#     return summary_stats, time_dic
+# 
+# def plot_size_power(summary_stats, method_mapping_dic, data_name='', output_folder=None):
+#     marker_list = ['o', 'v', '^', '*', 'h', 'd']
+#     # color_list = ['C8', 'C5', 'C1', 'C2', 'C3', 'C0']
+#     color_list = ['C1', 'C2', 'C3', 'C0', 'C5', 'C8']
+#     alpha_list = [0.05, 0.1, 0.15, 0.2]
+#     axes = plt.figure(figsize = [5, 4])
+#     method_list = list(summary_stats.keys())
+#     method_list = ['nfdr (fast)', 'nfdr', 'adapt', 'ihw', 'sbh', 'bh']
+#     n_data = summary_stats[method_list[0]]['FDP'].shape[0]
+#     for i_method,method in enumerate(method_list):
+#         y_val = np.mean(summary_stats[method]['FDP'], axis=0)
+#         y_err = np.std(summary_stats[method]['FDP'], axis=0) / np.sqrt(n_data) * 1.96
+#         plt.errorbar(alpha_list, y_val, yerr=y_err, label=method_mapping_dic[method],\
+#                      capsize=4, elinewidth = 1.5, linewidth=1.5,\
+#                      color = color_list[i_method], marker = marker_list[i_method],\
+#                      markersize = 6, alpha=0.8)
+#     x_min, x_max = plt.xlim()
+#     y_min, y_max = plt.ylim()
+#     axis_min = min(x_min, y_min)
+#     axis_max = max(x_max, y_max)
+#     plt.plot([axis_min, axis_max], [axis_min, axis_max], linestyle='--', color='k')
+#     plt.legend(loc=2, fontsize=12)
+#     plt.ylabel('FDP', fontsize=16)
+#     plt.xlabel('nominal FDR', fontsize=16)
+#     if output_folder is not None:
+#         plt.tight_layout()
+#         plt.savefig(output_folder+'fdp_%s.png'%data_name)
+#         plt.savefig(output_folder+'fdp_%s.pdf'%data_name)
+#     else:
+#         plt.show()
+#     axes = plt.figure(figsize = [5, 4])
+#     for i_method,method in enumerate(method_list):
+#         y_val = np.mean(summary_stats[method]['Power'], axis=0)
+#         y_err = np.std(summary_stats[method]['Power'], axis=0) / np.sqrt(n_data) * 1.96
+#         plt.errorbar(alpha_list, y_val, yerr=y_err, label=method_mapping_dic[method],\
+#                      capsize=4, elinewidth = 1.5, linewidth=1.5,\
+#                      color = color_list[i_method], marker = marker_list[i_method],\
+#                      markersize = 6, alpha=0.8)
+#     plt.legend(loc=2, fontsize=12)
+#     plt.ylabel('power', fontsize=16)
+#     plt.xlabel('nominal FDR', fontsize=16)
+#     if output_folder is not None:
+#         plt.tight_layout()
+#         plt.savefig(output_folder+'power_%s.png'%data_name)
+#         plt.savefig(output_folder+'power_%s.pdf'%data_name)
+#     else:
+#         plt.show()
+#     plt.close('all')
