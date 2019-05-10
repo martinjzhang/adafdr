@@ -10,6 +10,7 @@ import logging
 import matplotlib.pyplot as plt
 import torch.nn.functional as tf
 import time
+import collections
 
 np.set_printoptions(precision=4,suppress=True)
 
@@ -217,7 +218,8 @@ def adafdr_explore(p_input, x_input, alpha=0.1, n_full=None, vis_dim=None,\
             plt.xticks(x_grid, cate_name_, rotation=90, fontsize=12)
         elif x_max>1e4:
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-        plt.ylabel('null/alt proportion', fontsize=14)
+        # plt.ylabel('null/alt proportion', fontsize=14)
+        plt.ylabel('covariate distribution\n for null/alt', fontsize=14)
         plt.legend(fontsize=12)
         plt.xlabel('covariate $x$', fontsize=14)
         plt.tight_layout()
@@ -343,6 +345,7 @@ def method_single_fold_wrapper(data):
     K, alpha, n_full,n_itr, output_folder, random_state, verbose, fast_mode, covariate_type = data[2]
     fold_number = data[3]
     # Start a write file.
+    start_time = time.time()
     if output_folder is not None:
         fname = output_folder+'/record_fold_%d.txt'%fold_number
         f_write = open(fname,'w+')
@@ -365,19 +368,29 @@ def method_single_fold_wrapper(data):
     # Same value for hypothesis with the same covariate
     _, inv_map = np.unique(data[1][1],axis=0,return_inverse=True)
     val_list, ct = np.unique(inv_map, return_counts=True)
+    # print('## wrapper %d:: 5 time=%0.1fs'%(fold_number, time.time()-start_time))
+    # # old
+    # for val in val_list[ct>1]:
+    #     temp_ind = (inv_map==val)
+    #     t2[temp_ind] = np.mean(t2[temp_ind])    
+    # new 
+    temp_dic = collections.defaultdict(list)
+    for i, e in enumerate(inv_map):
+      temp_dic[e].append(i)
     for val in val_list[ct>1]:
-        temp_ind = (inv_map==val)
+        temp_ind = temp_dic[val]
         t2[temp_ind] = np.mean(t2[temp_ind])
     gamma = rescale_mirror(t2,p2,alpha,f_write=f_write,title='cv',n_full=n_full)
     t2 = gamma*t2
     if f_write is not None:
-        f_write.write('\n## Test result with method_cv fold_%d\n'%fold_number)
-        result_summary(p2<t2, f_write=f_write, title='method_single_fold_wrapper_%d'%fold_number)
+        f_write.write('\n## Test result with fold %d [test]\n'%fold_number)
+        print('## Test result with fold %d [test]'%fold_number)
+        result_summary(p2<t2, f_write=f_write)
+        print('')
         f_write.close()
     return t2
     # return np.sum(p2<t2), t2, [a,b,w,mu,sigma,gamma]
 
-### Fixit: change it to adafdr_fit?
 def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_norm=True,
                covariate_type=None, h=None, verbose=False, output_folder=None, random_state=0,
                single_core=True, fast_mode=True):
@@ -496,7 +509,10 @@ def adafdr_test(p_input, x_input, K=5, alpha=0.1, n_full=None, n_itr=1500, qt_no
     n_rej = np.zeros(2, dtype=int)
     n_rej[0] = np.sum(decision[fold_idx==0])
     n_rej[1] = np.sum(decision[fold_idx==1])
-    print('## total rejection: %d\n'%np.sum(p<=t))
+    if verbose:
+        print('## adafdr_test finished')
+        print('# number of rejections=%d, time=%0.1fs'
+              %(np.sum(p<=t), time.time()-start_time))
     res = {'threshold':t, 'fold_idx':fold_idx, 'p_value':p_input,
            'decision':decision, 'n_rej':n_rej}
     return res
@@ -543,10 +559,9 @@ def adafdr_retest(res_adafdr, alpha=0.1, n_full=None, output_folder=None):
                'fold_idx':res_adafdr['fold_idx'], 'p_value':res_adafdr['p_value']}
     return res_new
 
-def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
-                       n_itr=1500, h=None, verbose=False,\
-                       output_folder=None, fold_number=0, random_state=0, f_write=None,\
-                       fast_mode=False):
+def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,
+                       n_itr=1500, h=None, verbose=False, output_folder=None,
+                       fold_number=0, random_state=0, f_write=None, fast_mode=False):
     """Learn the decision threshold via optimization.
 
     Args:
@@ -570,6 +585,7 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
         theta (list): Learned (reparametrized) parameters with the format [a,b,w,mu,sigma,gamma].
     """
     torch.manual_seed(random_state)
+    start_time = time.time()
     p = np.copy(p_input)
     x = np.copy(x_input)
     if len(x.shape)==1:
@@ -598,9 +614,16 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     res_fast = (np.sum(p < t), t.copy(), [a,b,w,mu,sigma,gamma])
     # Return the result without optimization.
     if fast_mode or (np.sum(p<t)<100) or (np.sum(p>1-t)<20):
-        temp_str = 'Too few discoveries for optimization: ' +\
+        if fast_mode: 
+            temp_str = '## Fast_mode is on, ' +\
                        'D=%d, FD_hat=%d, '%(np.sum(p<t), np.sum(p>1-t)) +\
                        'Exit with fast mode result.\n'
+        else:
+            temp_str = 'Too few discoveries for optimization: ' +\
+                       'D=%d, FD_hat=%d, '%(np.sum(p<t), np.sum(p>1-t)) +\
+                       'Exit with fast mode result.\n'
+        temp_str = temp_str + '# fold %d [test] finished, time=%0.2fs'%(fold_number,
+                                                                   time.time()-start_time)
         if verbose:
             print(temp_str)
         if f_write is not None:            
@@ -650,6 +673,7 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
                 f_write.write('# Bump %d: w=%0.4f\n'%(k,w.data.numpy()[k]))
                 f_write.write('         mu=%s\n'%(mu.data.numpy()[k])) 
                 f_write.write('      sigma=%s\n'%(sigma.data.numpy()[k])) 
+            f_write.write('# Main time=%0.2fs\n'%(time.time()-start_time))                
             f_write.write('\n')
     # Specifying the optimizer.
     optimizer = torch.optim.Adam([a,b,w,mu,sigma],lr=0.02)
@@ -720,8 +744,10 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,\
     t *= gamma
     n_rej=np.sum(p<t)     
     if verbose: 
+        print('# fold %d finished, time=%0.2fs\n'%(fold_number, time.time()-start_time))
         if f_write is not None:
             f_write.write('\n## Test result with method_single_fold\n')
+            f_write.write('# single fold [test], time=%0.2fs\n'%(time.time()-start_time))    
         result_summary(p<t, h=h, f_write=f_write, title='method_single_fold_%d'%fold_number)
     theta = [a,b,w,mu,sigma,gamma]
     if n_rej < 0.9*res_fast[0]:
@@ -820,7 +846,7 @@ def rescale_mirror(t,p,alpha,f_write=None,title='',n_full=None):
             # Use FD_hat_bh when the number of discoveries is very few
             return min(5, FD_hat_bh)
             # return max(FD_hat, FD_hat_bh)
-        
+    start_time = time.time()    
     if f_write is not None:
         f_write.write('\n## rescale_mirror: %s\n'%title)    
     # Rescale t to a sensible region.
@@ -852,11 +878,10 @@ def rescale_mirror(t,p,alpha,f_write=None,title='',n_full=None):
     # Binary search.
     gamma_m = (gamma_u+gamma_l)/2    
     # while (gamma_u-gamma_l>1e-2) or (max(1, np.sum(p>1-t*gamma_m))/max(1, np.sum(p<t*gamma_m)) > alpha):
-    while (gamma_u-gamma_l>1e-2) or (get_FD_hat(p, t*gamma_m, n_full=n_full)/\
+    while (gamma_u-gamma_l>1e-2) or (get_FD_hat(p, t*gamma_m, n_full=n_full)/
                                      max(1, np.sum(p<t*gamma_m)) > alpha):
         gamma_m = (gamma_l+gamma_u)/2
         D_hat = max(1, np.sum(p<t*gamma_m))
-        # FD_hat = max(1, np.sum(p>1-t*gamma_m))
         FD_hat = get_FD_hat(p, t*gamma_m, n_full=n_full)
         alpha_hat = FD_hat/D_hat
         if f_write is not None:
@@ -873,6 +898,7 @@ def rescale_mirror(t,p,alpha,f_write=None,title='',n_full=None):
             break
     if f_write is not None:
         f_write.write('# final output: gamma=%0.4f\n'%((gamma_u+gamma_l)/2*gamma_pre))
+        f_write.write('# time=%0.2fs\n'%(time.time()-start_time))        
     return max((gamma_u+gamma_l)/2*gamma_pre, 1e-20) 
 
 def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=False,
@@ -900,6 +926,7 @@ def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=Fal
     np.random.seed(random_state)
     p = np.copy(p_input)
     x = np.copy(x_input)
+    start_time = time.time()
     if f_write is not None:
         f_write.write('## method_init starts\n')        
     if len(x.shape)==1: 
@@ -936,8 +963,9 @@ def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=Fal
         gamma = rescale_mirror(t,p,alpha,n_full=n_full)   
         t = t*gamma
         if f_write is not None:
-            f_write.write('\n## Test result with method_init\n')        
-        result_summary(p<t,h,f_write=f_write, title='method_init_%d'%fold_number)  
+            f_write.write('\n## Test result with method_init (train)\n')        
+        print('## method_init, fold %d [train]'%fold_number)
+        result_summary(p<t,h,f_write=f_write)  
         # Plot the fitted results
         if output_folder is not None:
             if d==1:
@@ -950,7 +978,7 @@ def method_init(p_input, x_input, K, alpha=0.1, n_full=None, h=None, verbose=Fal
         else:
             plt.show()
         if f_write is not None:
-            f_write.write('## method_init finished\n')
+            f_write.write('## method_init finished, time=%0.2fs\n'%(time.time()-start_time))
     return a,mu,sigma,w    
 
 def mixture_fit(x,K=3,x_w=None,n_itr=100,verbose=False,random_state=0,f_write=None,\

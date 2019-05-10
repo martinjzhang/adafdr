@@ -92,7 +92,7 @@ def test_adafdr_test():
     p, x, h, n_full, _ = dl.load_2d_bump_slope(n_sample=20000)
     res = md.adafdr_test(p, x, K=2, alpha=0.1, h=None, n_full=n_full,\
                          n_itr=50, verbose=False, random_state=0,\
-                         single_core=True)
+                         fast_mode = False, single_core=True)
     t = res['threshold']
     FDP = np.sum((p < t)*(h == 0))/np.sum(p < t)
     n_rej = np.sum(p < t)
@@ -100,4 +100,16 @@ def test_adafdr_test():
     assert n_rej > 700
     print('FDP', FDP)
     assert FDP < 0.12
-    
+def test_adafdr_retest():
+    """ Test for adafdr_retest
+    """
+    p, x, h, n_full, _ = dl.load_2d_bump_slope(n_sample=20000)
+    res = md.adafdr_test(p, x, alpha=0.1, single_core=True)
+    res_temp = md.adafdr_test(p, x, alpha=0.02, single_core=True)
+    res_retest = md.adafdr_retest(res, alpha=0.02)
+    print('adafdr_test discoveries at alpha=0.02:',
+          np.sum(res_temp['decision']))
+    print('adafdr_retest discoveries at alpha=0.02:',
+          np.sum(res_retest['decision']))
+    print('# diff', np.sum(res_temp['decision'] != res_retest['decision']))
+    assert np.sum(res_temp['decision'] != res_retest['decision'])<10

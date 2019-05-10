@@ -90,7 +90,6 @@ def result_summary(pred, h=None, f_write=None, title=''):
         print("# Num of alternatives:",np.sum(h))
         print("# Num of true discovery: %d"%np.sum(pred*h))
         print("# Actual FDP: %0.3f"%(1-np.sum(pred * h) / np.sum(pred)))
-    print('')    
     if f_write is not None:
         f_write.write('# Num of discovery: %d\n'%np.sum(pred))
         if h is not None:
