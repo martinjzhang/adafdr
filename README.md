@@ -119,7 +119,7 @@ It runs *AdaFDR-fast* on a 1d simulated data. If the package is successfully imp
 the result should look like:
 ```
 # AdaFDR successfully finished! 
-# D=840, FD=80, FDP=0.095
+# D=837, FD=79, FDP=0.094
 ```
 
 <!-- 
