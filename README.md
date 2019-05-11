@@ -151,6 +151,9 @@ multi-core processing. Then it is recommended to use `md.adafdr_test(p, x, alpha
 for the fast version and `md.adafdr_test(p, x, alpha=0.1, fast_mode=False)` for the regular 
 version with single-core processing.
 -->
+## R API of python package
+
+R API of this package can be found [here](https://github.com/fxia22/RadaFDR).
 
 ## Citation information
 Zhang, Martin J., Fei Xia, and James Zou. "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing." bioRxiv (2018): 496372.
