@@ -67,7 +67,7 @@ res = adafdr.method.adafdr_test(p, x, alpha=0.1, fast_mode=False, single_core=Fa
 <!-- * `res['n_rej']`: the number of rejections (on each fold). -->
 <!--* `res['theta']`: a list of learned parameters. -->
 
-* If the `output_folder` is a filepath (str) instead of `None`, the covariate visualization figures will be 
+* If the `output_folder` is a filepath (str) instead of `None`, the logfiles and some intermediate results will be 
 saved in `output_folder`. Otherwise, they will show up in the console. 
 
 * `covariate_type`: a length-d python list with values 0/1. It specifies the type of each covariate: 0 means numerical/ordinal while 1 means categorical. For example, `covariate_type=[0,1]` means there are 2 covariates, the first is numerical/ordinal and the second is categorical. If not specified, a covariate with more than 75 distinct values is regarded as numerical/ordinal and otherwise categorical.
