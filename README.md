@@ -3,15 +3,21 @@
 
 A fast and covariate-adaptive method for multiple hypothesis testing. 
 
-Software accompanying the paper "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing", 2018.
-
 ## Requirement
-* AdaFDR runs on python 3.6
+* AdaFDR runs on python 3.6 or later
 
 ## Installation
 ```
 pip install adafdr
 ```
+
+## Version History
+
+- `0.1.8`: latest version.
+  -  The torch dependency was changed to `torch==1.4.0`. 
+  - `scheduler.step()` goes after `optimizer.step()`
+  - add `loss.backward(retain_graph=True)`
+- `0.1.7`: the version released with the paper.
 
 ## Usage
 ### Import package
@@ -48,7 +54,7 @@ saved in `output_folder`. Otherwise, they will show up in the console.
 
 ### Multiple testing
 The multiple hypothesis testing method `adafdr_test` can be used as 
-1. fast version (default):
+1. fast version (default, **recommended for practical usage**):
 ```python
 res = adafdr.method.adafdr_test(p, x, alpha=0.1, covariate_type=None)
 ```
@@ -169,6 +175,6 @@ version with single-core processing.
 R API of this package can be found [here](https://github.com/fxia22/RadaFDR).
 
 ## Citation information
-Zhang, Martin J., Fei Xia, and James Zou. "AdaFDR: a Fast, Powerful and Covariate-Adaptive Approach to Multiple Hypothesis Testing." bioRxiv (2018): 496372.
+Zhang, Martin J., Fei Xia, and James Zou. "Fast and covariate-adaptive method amplifies detection power in large-scale multiple hypothesis testing." Nature communications 10.1 (2019): 1-11.
 
 Xia, Fei, et al. "Neuralfdr: Learning discovery thresholds from hypothesis features." Advances in Neural Information Processing Systems. 2017.
