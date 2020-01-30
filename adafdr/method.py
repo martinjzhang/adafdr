@@ -681,7 +681,7 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,
     optimizer.zero_grad()
     # Optimization.
     for l in range(n_itr):        
-        scheduler.step()
+        # scheduler.step() # moved below in v0.1.8
         # Calculate the model.
         optimizer.zero_grad()
         sigma = sigma.clamp(min=1e-4)
@@ -693,10 +693,13 @@ def method_single_fold(p_input, x_input, K=5, alpha=0.1, n_full=None,
                                 - alpha*torch.mean(torch.sigmoid(lambda0*(t-p))))        
         loss  = loss1+loss2
         # Back propogation
-        loss.backward()
-        optimizer.step()               
+        # print(l)
+        # loss.backward()
+        loss.backward(retain_graph=True)
+        optimizer.step()  
+        scheduler.step() # v0.1.8
         # Record important quantities.
-        loss_rec[l] = loss.data.numpy()        
+        loss_rec[l] = loss.data.numpy()
         if verbose:
             if l%(int(n_itr)/5)==0:
                 if f_write is not None:

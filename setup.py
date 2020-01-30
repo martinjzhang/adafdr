@@ -10,8 +10,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="adafdr",
-    version="0.1.7",
-    # version="0.7.0", # test version
+    version="0.1.8",
     author="Martin Zhang, Fei Xia, James Zou",
     author_email="jinye@stanford.edu",
     description="A fast and covariate-adaptive method for multiple hypothesis testing",
@@ -29,14 +28,42 @@ setuptools.setup(
        'numpy',
        'scipy',
        'scikit-learn',
-       'torch==0.3.1',
-       # 'multiprocessing',
-       # 'logging',
+       'torch==1.4.0',
        'matplotlib',
-       # 'time',
-       # 'os',
        ],
 )
+
+# The version released with the paper
+# setuptools.setup(
+#     name="adafdr",
+#     version="0.1.7",
+#     # version="0.7.0", # test version
+#     author="Martin Zhang, Fei Xia, James Zou",
+#     author_email="jinye@stanford.edu",
+#     description="A fast and covariate-adaptive method for multiple hypothesis testing",
+#     long_description=long_description,
+#     long_description_content_type="text/markdown",
+#     url="https://github.com/martinjzhang/adafdr",
+#     packages=setuptools.find_packages(),
+#     classifiers=[
+#         "Programming Language :: Python :: 3",
+#         "License :: OSI Approved :: MIT License",
+#         "Operating System :: OS Independent",
+#     ],
+#     include_package_data=True,
+#     install_requires=[
+#        'numpy',
+#        'scipy',
+#        'scikit-learn',
+#        'torch==0.3.1',
+#        # 'multiprocessing',
+#        # 'logging',
+#        'matplotlib',
+#        # 'time',
+#        # 'os',
+#        ],
+# )
+
 # setup(name='adafdr',
 #       version='0.1.0',
 #       description='A fast and covariate-adaptive method for multiple hypothesis testing.',
