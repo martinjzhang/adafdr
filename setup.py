@@ -28,7 +28,7 @@ setuptools.setup(
        'numpy',
        'scipy',
        'scikit-learn',
-       'torch==1.4.0',
+       'torch==2.2.0',
        'matplotlib',
        ],
 )
